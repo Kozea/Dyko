@@ -7,13 +7,16 @@ Kalamar is an object-relational mapping library for the `Python`_ language. Its 
 
 
 .. toctree::
+
+    :maxdepth: 2
+    
     item.rst
     parser.rst
     site.rst
     storage.rst
     utils.rst
 
-Sitem
+Item
 -----
 .. automodule: site
 

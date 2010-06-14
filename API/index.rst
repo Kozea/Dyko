@@ -6,6 +6,9 @@ Dyko is a framework web
 
 
 .. toctree::
+    
+    :maxdepth: 2
+
     kalamar.rst
     kraken.rst
     koral.rst
