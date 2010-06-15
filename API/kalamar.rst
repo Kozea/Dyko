@@ -1,6 +1,6 @@
-================
-Dyko - Reference
-================
+==============
+Dyko - Kalamar
+==============
 
 Kalamar is an object-relational mapping library for the `Python`_ language. Its concept is based on our called "access-point".  
 
@@ -10,11 +10,11 @@ Kalamar is an object-relational mapping library for the `Python`_ language. Its 
 
     :maxdepth: 2
     
-    item.rst
-    parser.rst
-    site.rst
-    storage.rst
-    utils.rst
+    kalamar/item.rst
+    kalamar/parser.rst
+    kalamar/site.rst
+    kalamar/storage.rst
+    kalamar/utils.rst
 
 Item
 -----
@@ -33,10 +33,6 @@ Item
 Parser
 ------
 .. automodule: parser
-
-Utils
------
-.. automodule: kalamar.utils
 
 
 .. _Python: http://www.python.org
