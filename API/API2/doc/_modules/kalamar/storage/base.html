@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kalamar.storage.base &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="../../../index.html" />
+    <link rel="up" title="kalamar" href="../../kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" accesskey="U">kalamar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kalamar.storage.base</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># This file is part of Dyko</span>
+<span class="c"># Copyright © 2008-2009 Kozea</span>
+<span class="c">#</span>
+<span class="c"># This library is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with Kalamar.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Default access point.</span>
+
+<span class="sd">``AccessPoint`` is the class to override in order to create storage access</span>
+<span class="sd">points.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">kalamar.item</span> <span class="kn">import</span> <span class="n">Item</span>
+<span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">parser</span>
+<span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">storage</span>
+
+
+
+<div class="viewcode-block" id="AccessPoint"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint">[docs]</a><span class="k">class</span> <span class="nc">AccessPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for all storage backends.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+
+<span class="sd">    - config: a dictionnary of the access point configuration.</span>
+<span class="sd">    - default_encoding: default character encoding used if the parser does</span>
+<span class="sd">      not have one. Read-only attribute.</span>
+<span class="sd">    - property_names: properties defined in the access_point configuration.</span>
+<span class="sd">    - url: where the data is available.</span>
+<span class="sd">    - basedir: directory from where relatives pathes should start.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="AccessPoint.from_url"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.from_url">[docs]</a>    <span class="k">def</span> <span class="nf">from_url</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an instance of the appropriate class according to the URL.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; AccessPoint.from_url(url=&#39;nonexistent-protocol://…&#39;)</span>
+<span class="sd">        Traceback (most recent call last):</span>
+<span class="sd">            ...</span>
+<span class="sd">        ValueError: Unknown protocol: nonexistent-protocol</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">storage</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">subclass</span> <span class="ow">in</span> <span class="n">utils</span><span class="o">.</span><span class="n">recursive_subclasses</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s">&#39;protocol&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">protocol</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">subclass</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown protocol: &#39;</span> <span class="o">+</span> <span class="n">protocol</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Common instance initialisation.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;parser&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c"># check that this parser exists</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">subclass</span> <span class="ow">in</span> <span class="n">utils</span><span class="o">.</span><span class="n">recursive_subclasses</span><span class="p">(</span><span class="n">Item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser_name</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">ParserNotAvailable</span><span class="p">(</span><span class="s">&#39;Unknown parser: &#39;</span> <span class="o">+</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">parser_name</span><span class="p">)</span>
+                                       
+        <span class="bp">self</span><span class="o">.</span><span class="n">site</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;site&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_encoding</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;default_encoding&#39;</span><span class="p">,</span> <span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_aliases</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">if</span> <span class="s">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">part</span> <span class="k">else</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">part</span>
+            <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;storage_aliases&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">part</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser_aliases</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">if</span> <span class="s">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">part</span> <span class="k">else</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">part</span>
+            <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;parser_aliases&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">part</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">property_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">alias</span> <span class="ow">in</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">storage_aliases</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser_aliases</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;basedir&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AccessPoint.expand_syntaxic_sugar"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.expand_syntaxic_sugar">[docs]</a>    <span class="k">def</span> <span class="nf">expand_syntaxic_sugar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Expand syntaxic sugar in requests.</span>
+<span class="sd">        </span>
+<span class="sd">        ``conditions`` is a list of (property_name, operator, value) tuples</span>
+<span class="sd">        as returned by kalamar.site.Site.parse_request.</span>
+<span class="sd">        </span>
+<span class="sd">        If ``operator`` is None, set it to ``kalamar.utils.equals``.</span>
+
+<span class="sd">        If ``property_name`` is None in the n-th condition, set it to </span>
+<span class="sd">        the n-th property of this access point.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint(url=&#39;&#39;, storage_aliases=&#39;a=p1/b=p2/c=p3&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; list(ap.expand_syntaxic_sugar([</span>
+<span class="sd">        ...     utils.Condition(None, None,              1),</span>
+<span class="sd">        ...     utils.Condition(None, utils.operator.gt, 2),</span>
+<span class="sd">        ...     utils.Condition(&#39;c&#39;, None,               3),</span>
+<span class="sd">        ...     utils.Condition(&#39;d&#39;, utils.operator.ge,  4)</span>
+<span class="sd">        ... ])) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE</span>
+<span class="sd">        [Condition(&#39;a&#39;, &lt;built-in function eq&gt;, 1),</span>
+<span class="sd">         Condition(&#39;b&#39;, &lt;built-in function gt&gt;, 2),</span>
+<span class="sd">         Condition(&#39;c&#39;, &lt;built-in function eq&gt;, 3),</span>
+<span class="sd">         Condition(&#39;d&#39;, &lt;built-in function ge&gt;, 4)]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cond</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">utils</span><span class="o">.</span><span class="n">Condition</span><span class="p">(</span><span class="n">cond</span><span class="o">.</span><span class="n">property_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                  <span class="n">cond</span><span class="o">.</span><span class="n">operator</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">operator</span><span class="o">.</span><span class="n">eq</span><span class="p">,</span>
+                                  <span class="n">cond</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="AccessPoint.search"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a sequence of every item matching &quot;conditions&quot;.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;conditions&quot; is a list of utils.Condition objects as returned by</span>
+<span class="sd">        kalamar.site.Site.parse_request.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Algorithm:</span>
+        <span class="c"># 1. list the interesting storage properties</span>
+        <span class="c"># 2. expand syntaxic sugar</span>
+        <span class="c"># 3. divide conditions into two categories : parser and storage</span>
+        <span class="c"># 4. call _storage_search with storage conditions as parameters</span>
+        <span class="c"># 5. filter the items yielded with conditions applying to the parser</span>
+        <span class="c"># 6. yield filtered items</span>
+        
+        <span class="n">storage_aliases</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_aliases</span><span class="p">)</span>
+        <span class="n">parser_aliases</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser_aliases</span><span class="p">)</span>
+        
+        <span class="n">storage_properties_not_aliased</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_storage_properties</span><span class="p">())</span>
+        <span class="c"># Parser aliased properties have priority over storage not aliased</span>
+        <span class="c"># properties</span>
+        <span class="n">storage_properties_not_aliased</span><span class="o">.</span><span class="n">difference_update</span><span class="p">(</span><span class="n">parser_aliases</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        
+        <span class="n">storage_properties</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">storage_aliases</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">storage_properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">storage_properties_not_aliased</span><span class="p">)</span>
+        
+        <span class="n">storage_conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">parser_conditions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expand_syntaxic_sugar</span><span class="p">(</span><span class="n">conditions</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">property_name</span> <span class="ow">in</span> <span class="n">storage_properties</span><span class="p">:</span>
+                <span class="n">storage_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">Condition</span><span class="p">(</span>
+                    <span class="n">storage_aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">,</span>
+                                        <span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">),</span>
+                    <span class="n">condition</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parser_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">properties</span><span class="p">,</span> <span class="n">opener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage_search</span><span class="p">(</span><span class="n">storage_conditions</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_item</span><span class="p">(</span><span class="n">opener</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">parser_conditions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">test_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">):</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">item</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_make_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opener</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="n">item_parser</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">_find_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">item_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opener</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="AccessPoint.get_storage_properties"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.get_storage_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_storage_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the list of properties used by the storage (not aliased).</span>
+
+<span class="sd">        This method has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_storage_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a sequence of tuple (properties, file_opener).</span>
+<span class="sd">        </span>
+<span class="sd">        This method has to be overriden.</span>
+
+<span class="sd">        Return values:</span>
+<span class="sd">        - &quot;properties&quot; is a dictionnary</span>
+<span class="sd">        - &quot;file_opener&quot; is a function that takes no argument and returns a</span>
+<span class="sd">          file-like object</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AccessPoint.save"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update or add the item.</span>
+
+<span class="sd">        This method has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AccessPoint.remove"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove/delete the item from the backend storage.</span>
+
+<span class="sd">        This method has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AccessPoint.remove_many"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.remove_many">[docs]</a>    <span class="k">def</span> <span class="nf">remove_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove all items matching the request.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AccessPoint.item_from_filename"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.item_from_filename">[docs]</a>    <span class="k">def</span> <span class="nf">item_from_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search for an item matching this filename.</span>
+<span class="sd">        </span>
+<span class="sd">        Storage that do not store items in files should leave this</span>
+<span class="sd">        implementation that return the NotImplemented constant.</span>
+
+<span class="sd">        Else, this method has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AccessPoint.primary_keys"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.primary_keys">[docs]</a>    <span class="k">def</span> <span class="nf">primary_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of primary keys names.</span>
+<span class="sd">        </span>
+<span class="sd">        Here, &quot;primary key&quot; must be understood as &quot;a sufficient set of keys to</span>
+<span class="sd">        make a request returning 0 or 1 object&quot;.</span>
+
+<span class="sd">        This list must be ordered and stable for a given access point, in order</span>
+<span class="sd">        to construct canonical requests for items.</span>
+<span class="sd">        </span>
+<span class="sd">        This property has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AccessPoint.generate_primary_values"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.base.AccessPoint.generate_primary_values">[docs]</a>    <span class="k">def</span> <span class="nf">generate_primary_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a dict with primary keys and unused values.</span>
+
+<span class="sd">        This function is particularly useful to create new items on a storage</span>
+<span class="sd">        unable to automatically generate meaningless primary keys (such as</span>
+<span class="sd">        filesystems, or databases without sequences).</span>
+
+<span class="sd">        This property has to be overriden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" >kalamar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

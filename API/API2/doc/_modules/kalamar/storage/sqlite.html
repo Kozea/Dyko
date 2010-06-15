@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kalamar.storage.sqlite &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="../../../index.html" />
+    <link rel="up" title="kalamar" href="../../kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" accesskey="U">kalamar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kalamar.storage.sqlite</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># This file is part of Dyko</span>
+<span class="c"># Copyright © 2008-2009 Kozea</span>
+<span class="c">#</span>
+<span class="c"># This library is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with Kalamar.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">SQLite 3 access point.</span>
+
+<span class="sd">This implementation depends on DBAPIStorage, the generic SQL database access</span>
+<span class="sd">point.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Cannot import sqlite3. &#39;</span>
+                  <span class="s">&#39;SQLite3 support will not be available.&#39;</span><span class="p">,</span>
+                  <span class="ne">ImportWarning</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="kn">from</span> <span class="nn">kalamar.storage.dbapi</span> <span class="kn">import</span> <span class="n">DBAPIStorage</span>
+
+
+
+<div class="viewcode-block" id="SQLiteStorage"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.sqlite.SQLiteStorage">[docs]</a>    <span class="k">class</span> <span class="nc">SQLiteStorage</span><span class="p">(</span><span class="n">DBAPIStorage</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;SQLite 3 access point&quot;&quot;&quot;</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="s">&#39;sqlite&#39;</span>
+        
+        <span class="k">def</span> <span class="nf">get_db_module</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sqlite3</span>
+        
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">url_to_filename_table</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Return the filename and the table to use for the SQLite DB</span>
+<span class="sd">            from a kalamar access point url.</span>
+<span class="sd">            </span>
+<span class="sd">            &gt;&gt;&gt; f = SQLiteStorage.url_to_filename_table</span>
+<span class="sd">            &gt;&gt;&gt; f(&#39;/base&#39;, &#39;sqlite://test.db?table&#39;)</span>
+<span class="sd">            (&#39;/base/test.db&#39;, &#39;table&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; f(&#39;/base&#39;, &#39;sqlite:///path/to/test.db?table&#39;) # one more slash</span>
+<span class="sd">            (&#39;/path/to/test.db&#39;, &#39;table&#39;)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">protocal</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">remainder</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;//&#39;</span><span class="p">)</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="n">remainder</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;?&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">table</span>
+            
+        
+        <span class="k">def</span> <span class="nf">_get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Return (``connection``, ``table``).</span>
+<span class="sd">            </span>
+<span class="sd">            Need &#39;url&#39; in the configuration in the following format:</span>
+<span class="sd">                sqlite:///path/to/file?table</span>
+<span class="sd">            or:</span>
+<span class="sd">                sqlite://./rel/path/to/file?table</span>
+<span class="sd">            or:</span>
+<span class="sd">                sqlite://:memory:?table</span>
+<span class="sd">            </span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_to_filename_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;basedir&#39;</span><span class="p">],</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">])</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">connection</span><span class="p">,</span> <span class="n">table</span>
+        
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">primary_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;List of the table primary keys.</span>
+<span class="sd">            </span>
+<span class="sd">            Fixture</span>
+<span class="sd">            &gt;&gt;&gt; from kalamar._test import fill_sqlite_db</span>
+<span class="sd">            &gt;&gt;&gt; storage = SQLiteStorage(url=&#39;sqlite://:memory:?test&#39;, basedir=&#39;&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; connection, table = storage.get_connection()</span>
+<span class="sd">            &gt;&gt;&gt; fill_sqlite_db(connection)</span>
+<span class="sd">            </span>
+<span class="sd">            Test</span>
+<span class="sd">            &gt;&gt;&gt; storage.primary_keys</span>
+<span class="sd">            [u&#39;key&#39;]</span>
+<span class="sd">            </span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&#39;PRAGMA table_info(</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">table</span><span class="p">)</span>
+            
+            <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s">&#39;cid&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;notnull&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;dflt_value&#39;</span><span class="p">,</span> <span class="s">&#39;pk&#39;</span><span class="p">],</span> <span class="n">values</span><span class="p">))</span>
+                      <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
+
+            <span class="k">return</span> <span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">field</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">]]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" >kalamar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,827 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kalamar.storage.dbapi &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="../../../index.html" />
+    <link rel="up" title="kalamar" href="../../kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" accesskey="U">kalamar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kalamar.storage.dbapi</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># This file is part of Dyko</span>
+<span class="c"># Copyright © 2008-2009 Kozea</span>
+<span class="c">#</span>
+<span class="c"># This library is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with Kalamar.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Database access point.</span>
+
+<span class="sd">DBAPIStorage is just a base class to construct different databases access</span>
+<span class="sd">points.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">array</span> <span class="kn">import</span> <span class="n">array</span>
+<span class="kn">import</span> <span class="nn">thread</span>
+
+<span class="kn">from</span> <span class="nn">kalamar.storage.base</span> <span class="kn">import</span> <span class="n">AccessPoint</span>
+<span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_generator</span>
+
+
+
+<span class="k">def</span> <span class="nf">_opener</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert ``content`` to ``str`` as some databases return buffers.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_clean_where_condition</span><span class="p">(</span><span class="n">property_name</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a DBAPI WHERE condition according to given parameters.</span>
+
+<span class="sd">    &gt;&gt;&gt; _clean_where_condition(u&#39;&quot;key&quot;&#39;, &#39;=&#39;, u&#39;value&#39;)</span>
+<span class="sd">    u&#39;&quot;key&quot;=?&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; _clean_where_condition(&#39;test_key&#39;, &#39;&gt;=&#39;, 0)</span>
+<span class="sd">    u&#39;test_key&gt;=?&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; _clean_where_condition(u&#39;test_key&#39;, &#39;=&#39;, None)</span>
+<span class="sd">    u&#39;test_key IS NULL&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; _clean_where_condition(&#39;&quot;key&quot;&#39;, u&#39;!=&#39;, None)</span>
+<span class="sd">    u&#39;&quot;key&quot; IS NOT NULL&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s">&#39;=&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">u&#39;</span><span class="si">%s</span><span class="s"> IS NULL&#39;</span> <span class="o">%</span> <span class="n">property_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">u&#39;</span><span class="si">%s</span><span class="s"> IS NOT NULL&#39;</span> <span class="o">%</span> <span class="n">property_name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">u&#39;</span><span class="si">%s%s</span><span class="s">?&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">property_name</span><span class="p">,</span> <span class="n">operator</span><span class="p">)</span>
+    
+
+
+<span class="k">class</span> <span class="nc">Parameter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+
+
+<div class="viewcode-block" id="DBAPIStorage"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.dbapi.DBAPIStorage">[docs]</a><span class="k">class</span> <span class="nc">DBAPIStorage</span><span class="p">(</span><span class="n">AccessPoint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for SQL SGBD Storage.</span>
+<span class="sd">    </span>
+<span class="sd">    Descendant class must override ``get_connection``, ``primary_keys``,</span>
+<span class="sd">    ``get_db_module`` and ``protocol``.</span>
+
+<span class="sd">    It may be useful to also redefine the following methods or attributes:</span>
+
+<span class="sd">    - ``_quote_name``</span>
+<span class="sd">    - ``_sql_escape_quotes``</span>
+<span class="sd">    - ``sql_operators``</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="bp">None</span>
+    
+    <span class="c"># Provided to ensure compatibility with as many SGDB as possible.</span>
+    <span class="c"># This may be modified by a descendant.</span>
+    <span class="n">sql_operators</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;=&#39;</span><span class="p">:</span> <span class="s">&#39;=&#39;</span><span class="p">,</span>
+        <span class="s">&#39;!=&#39;</span><span class="p">:</span> <span class="s">&#39;!=&#39;</span><span class="p">,</span>
+        <span class="s">&#39;&gt;&#39;</span><span class="p">:</span> <span class="s">&#39;&gt;&#39;</span><span class="p">,</span>
+        <span class="s">&#39;&gt;=&#39;</span><span class="p">:</span> <span class="s">&#39;&gt;=&#39;</span><span class="p">,</span>
+        <span class="s">&#39;&lt;&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;&#39;</span><span class="p">,</span>
+        <span class="s">&#39;&lt;=&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;=&#39;</span><span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">UnsupportedParameterStyleError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unavailable style for parameter.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DBAPIStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;content_column&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save item in the database.&quot;&quot;&quot;</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+        
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_module</span><span class="p">()</span><span class="o">.</span><span class="n">paramstyle</span>
+        
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_update_request</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+            
+            <span class="c"># TODO: this is incorrect: someone might have inserted a row just</span>
+            <span class="c"># now.  Instead, we should have uniqueness constaints in the</span>
+            <span class="c"># database, try an insert firt, and do an update if the database</span>
+            <span class="c"># throws a unique constraint violation.</span>
+            <span class="c"># See http://www.databasesandlife.com/unique-constraints/</span>
+            <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c"># Item does not exist, let&#39;s do an insert</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_build_insert_request</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">1</span>
+
+            <span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">item</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove the item from the database.&quot;&quot;&quot;</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">,</span> <span class="s">u&quot;DELETE FROM </span><span class="si">%s</span><span class="s"> WHERE &quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+        
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="n">parameters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                          <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=?&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span><span class="p">))</span>
+        
+        <span class="n">paramstyle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_module</span><span class="p">()</span><span class="o">.</span><span class="n">paramstyle</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tounicode</span><span class="p">(),</span>
+                                                   <span class="n">parameters</span><span class="p">,</span> <span class="n">paramstyle</span><span class="p">)</span>
+        
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a DB-API connection object and the table name in a tuple.</span>
+<span class="sd">        </span>
+<span class="sd">        If connection is broken, get_connection will try to get a new one.</span>
+
+<span class="sd">        This method can use config[&#39;url&#39;] to connect and may keep connection in</span>
+<span class="sd">        cache for later calls.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_module</span><span class="p">()</span><span class="o">.</span><span class="n">threadsafety</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c"># threads can share connections</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># one connection per thread</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">connection</span><span class="p">,</span> <span class="n">table</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s">&#39;ping&#39;</span><span class="p">):</span>
+                <span class="c"># In MySQLdb: check if the connection is alive and try to</span>
+                <span class="c"># reconnect if it&#39;s not</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">connection</span><span class="p">,</span> <span class="n">table</span>
+    
+    <span class="k">def</span> <span class="nf">_get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The actual, database-dependent implementation of get_connection.</span>
+<span class="sd">        </span>
+<span class="sd">        This method must be overriden by contrete subclasses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">get_db_module</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a DB-API implementation module.</span>
+<span class="sd">        </span>
+<span class="sd">        This method must be overriden.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Abstract method&#39;</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">get_storage_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the list of the storage properties.&quot;&quot;&quot;</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="s">&#39;SELECT * FROM </span><span class="si">%s</span><span class="s"> WHERE 1=2;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">properties_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+        
+        <span class="c"># If a content_column has been declared in kalamar configuration, it</span>
+        <span class="c"># becomes an item property (i.e. &#39;_content&#39;), so we remove it from</span>
+        <span class="c"># storage properties</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">properties_names</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">properties_names</span>
+    
+    <span class="k">def</span> <span class="nf">get_table_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return field description as a dictionnary.&quot;&quot;&quot;</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&#39;SELECT * FROM </span><span class="si">%s</span><span class="s"> WHERE 1=0;&#39;</span>
+                       <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+        <span class="n">fields_names</span> <span class="o">=</span> <span class="p">(</span><span class="n">desc_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">desc_values</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+        <span class="n">desc_names</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;type_code&#39;</span><span class="p">,</span> 
+                      <span class="s">&#39;display_size&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;internal_size&#39;</span><span class="p">,</span> 
+                      <span class="s">&#39;precision&#39;</span><span class="p">,</span> 
+                      <span class="s">&#39;scale&#39;</span><span class="p">,</span> 
+                      <span class="s">&#39;null_ok&#39;</span><span class="p">)</span>
+        <span class="n">desc_dicts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">desc_names</span><span class="p">,</span> <span class="n">desc_values</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+                      <span class="k">for</span> <span class="n">desc_values</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">fields_names</span><span class="p">,</span> <span class="n">desc_dicts</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">_storage_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of items matching the ``conditions``.</span>
+<span class="sd">        </span>
+<span class="sd">        ``conditions`` must be a list of tuples (name, function, value), where</span>
+<span class="sd">        function is in kalamar.utils.operators values.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+        
+        <span class="c"># Process conditions</span>
+        <span class="n">sql_condition</span><span class="p">,</span> <span class="n">python_condition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_conditions</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+        
+        <span class="c"># Build request</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_select_request</span><span class="p">(</span>
+            <span class="n">sql_condition</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_module</span><span class="p">()</span><span class="o">.</span><span class="n">paramstyle</span><span class="p">)</span>
+        
+        <span class="c"># Execute request</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        
+        <span class="c"># Release lock on the table we used.</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    
+        <span class="n">descriptions</span> <span class="o">=</span> <span class="p">[</span><span class="n">description</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">description</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+        <span class="n">dict_lines</span> <span class="o">=</span> <span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">descriptions</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_lines_from_cursor</span><span class="p">(</span><span class="n">cursor</span><span class="p">))</span>
+        
+        <span class="c"># Filter result and yield tuples (properties, value)</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter_result</span><span class="p">(</span><span class="n">dict_lines</span><span class="p">,</span> <span class="n">python_condition</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">filtered</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            
+            <span class="c"># If a content_column has been declared in kalamar configuration, it</span>
+            <span class="c"># becomes an item property (i.e. &#39;_content&#39;), so we remove it from</span>
+            <span class="c"># storage properties</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">line</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">)</span>
+                
+            <span class="k">yield</span> <span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">_opener</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">generate_primary_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a dict with primary keys and unused values.&quot;&quot;&quot;</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table_description</span><span class="p">()</span>
+        <span class="n">primary_values</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span><span class="p">:</span>
+                <span class="n">key_type</span> <span class="o">=</span> <span class="n">description</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;type_code&#39;</span><span class="p">]</span>
+                <span class="n">key_precision</span> <span class="o">=</span> <span class="n">description</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;precision&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">key_type</span> <span class="o">==</span> <span class="s">&#39;STRING&#39;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">_generator</span><span class="o">.</span><span class="n">random_str</span><span class="p">(</span><span class="n">key_precision</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key_type</span> <span class="o">==</span> <span class="s">&#39;BINARY&#39;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">_generator</span><span class="o">.</span><span class="n">random_bool</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">key_type</span> <span class="o">==</span> <span class="s">&#39;DATETIME&#39;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">_generator</span><span class="o">.</span><span class="n">random_timestamp</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># Try to return a number, can be casted in anything</span>
+                    <span class="n">maximum</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">8</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">_generator</span><span class="o">.</span><span class="n">random_long</span><span class="p">(</span><span class="n">maximum</span><span class="p">)</span>
+                <span class="n">primary_values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+            <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="c"># TODO: test if primary values are not already used</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">primary_values</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_generate_lines_from_cursor</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchmany</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">result</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchmany</span><span class="p">()</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_filter_result</span><span class="p">(</span><span class="n">dict_lines</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate lines matching conditions.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; lines = ({&#39;name&#39; : &#39;toto&#39;, &#39;number&#39; : 42},</span>
+<span class="sd">        ...          {&#39;name&#39; : &#39;tata&#39;, &#39;number&#39; : 123},</span>
+<span class="sd">        ...          {&#39;name&#39; : &#39;toto&#39;, &#39;number&#39; : 123})</span>
+<span class="sd">        &gt;&gt;&gt; conditions = (utils.Condition(&#39;name&#39;, utils.operators[&#39;=&#39;], &#39;toto&#39;),</span>
+<span class="sd">        ...               utils.Condition(&#39;number&#39;, utils.operators[&#39;=&#39;], 42))</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; for line in DBAPIStorage._filter_result(lines, conditions):</span>
+<span class="sd">        ...     print line</span>
+<span class="sd">        {&#39;name&#39;: &#39;toto&#39;, &#39;number&#39;: 42}</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">dict_lines</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="o">.</span><span class="n">operator</span><span class="p">(</span>
+                    <span class="n">line</span><span class="p">[</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">],</span> <span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line</span>
+    
+    <span class="k">def</span> <span class="nf">_process_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return ``sql_conditions``, ``python_conditions``.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; storage = DBAPIStorage(url=&#39;toto&#39;, basedir=&#39;tata&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; conditions = (</span>
+<span class="sd">        ...     utils.Condition(u&#39;name&#39;, utils.operators[u&#39;=&#39;], u&#39;toto&#39;),</span>
+<span class="sd">        ...     utils.Condition(u&#39;number&#39;, utils.operators[u&#39;&lt;&#39;], 42),</span>
+<span class="sd">        ...     utils.Condition(u&#39;number&#39;, utils.operators[u&#39;~=&#39;], 42),</span>
+<span class="sd">        ...     utils.Condition(u&#39;number&#39;, utils.operators[u&#39;~!=&#39;], 42))</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; sql_condition, python_condition = \</span>
+<span class="sd">              storage._process_conditions(conditions)</span>
+<span class="sd">        &gt;&gt;&gt; for c in sql_condition: print c</span>
+<span class="sd">        Condition(u&#39;name&#39;, &lt;built-in function eq&gt;, u&#39;toto&#39;)</span>
+<span class="sd">        Condition(u&#39;number&#39;, &lt;built-in function lt&gt;, 42)</span>
+<span class="sd">        &gt;&gt;&gt; for c in python_condition: print c # doctest:+ELLIPSIS</span>
+<span class="sd">        Condition(u&#39;number&#39;, &lt;function re_match at 0x...&gt;, 42)</span>
+<span class="sd">        Condition(u&#39;number&#39;, &lt;function re_not_match at 0x...&gt;, 42)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sql_conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">python_conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="n">operator_str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">operators_rev</span><span class="p">[</span><span class="n">condition</span><span class="o">.</span><span class="n">operator</span><span class="p">]</span>
+            
+            <span class="k">if</span> <span class="n">operator_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_operators</span> <span class="ow">and</span> \
+               <span class="ow">not</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">operator_str</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="s">&#39;!=&#39;</span><span class="p">)):</span>
+                <span class="c"># Operators other than = and != have a weird behaviour in python</span>
+                <span class="c"># wich differs from SQL.</span>
+                <span class="n">operator</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">operators</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sql_operators</span><span class="p">[</span><span class="n">operator_str</span><span class="p">]]</span>
+                <span class="n">sql_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">utils</span><span class="o">.</span><span class="n">Condition</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">,</span>
+                                    <span class="n">operator</span><span class="p">,</span> <span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">python_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sql_conditions</span><span class="p">,</span> <span class="n">python_conditions</span>
+    
+    <span class="k">def</span> <span class="nf">_build_select_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a tuple (request, typed_parameters).</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;conditions`` must be a sequence of Condition objects.</span>
+<span class="sd">        ``table`` is the name of the used table.</span>
+<span class="sd">        ``style`` must be one of &#39;qmark&#39;, &#39;numeric&#39;, &#39;named&#39;, &#39;format&#39;,</span>
+<span class="sd">                  &#39;pyformat&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        The returned ``formated_request`` is in the DB-API 2 style given by</span>
+<span class="sd">        paramstyle (see DB-API spec.).</span>
+
+<span class="sd">        The returned ``typed_parameters`` is a list or a dictionnary, according</span>
+<span class="sd">        to the database parameters style.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; conditions = (</span>
+<span class="sd">        ...     utils.Condition(u&#39;toto&#39;, utils.operators[u&#39;=&#39;], u&#39;tata&#39;),</span>
+<span class="sd">        ...     utils.Condition(u&#39;the_answer&#39;, utils.operators[u&#39;&gt;=&#39;], 42))</span>
+<span class="sd">        &gt;&gt;&gt; storage = DBAPIStorage(url=&#39;toto&#39;, basedir=&#39;tata&#39;,</span>
+<span class="sd">        ...                        content_column = &#39;content_col&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; class db_mod:</span>
+<span class="sd">        ...     BINARY = 1</span>
+<span class="sd">        ...     DATETIME = 1</span>
+<span class="sd">        ...     def Binary(self, data):</span>
+<span class="sd">        ...         return data</span>
+<span class="sd">        &gt;&gt;&gt; storage.get_db_module = lambda: db_mod()</span>
+<span class="sd">        &gt;&gt;&gt; storage.get_table_description = lambda: {</span>
+<span class="sd">        ...     &#39;toto&#39;: {&#39;type_code&#39;: 1},</span>
+<span class="sd">        ...     &#39;the_answer&#39;: {&#39;type_code&#39;: 1}</span>
+<span class="sd">        ... }</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; req, params = storage._build_select_request(conditions,</span>
+<span class="sd">        ...                                             &#39;table&#39;, &#39;qmark&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; req</span>
+<span class="sd">        u&#39;SELECT * FROM &quot;table&quot; WHERE &quot;toto&quot;=? AND &quot;the_answer&quot;&gt;=? ;&#39;</span>
+<span class="sd">        &gt;&gt;&gt; params</span>
+<span class="sd">        (u&#39;tata&#39;, 42)</span>
+<span class="sd">        </span>
+<span class="sd">        If no condition specified, the &#39;WHERE&#39; statement must not appear.</span>
+<span class="sd">        &gt;&gt;&gt; req, params = storage._build_select_request((), &#39;table&#39;, &#39;qmark&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; req</span>
+<span class="sd">        u&#39;SELECT * FROM &quot;table&quot; ;&#39;</span>
+<span class="sd">        &gt;&gt;&gt; params</span>
+<span class="sd">        ()</span>
+
+<span class="sd">        If a condition value is None, replace the test by IS (NOT) NULL</span>
+<span class="sd">        &gt;&gt;&gt; conditions = (utils.Condition(u&#39;toto&#39;, utils.operators[u&#39;=&#39;], None),</span>
+<span class="sd">        ...     utils.Condition(u&#39;the_answer&#39;, utils.operators[u&#39;!=&#39;], None))</span>
+<span class="sd">        &gt;&gt;&gt; req, params = storage._build_select_request(conditions,</span>
+<span class="sd">        ...                                             &#39;table&#39;, &#39;qmark&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; req</span>
+<span class="sd">        u&#39;SELECT * FROM &quot;table&quot; WHERE &quot;toto&quot; IS NULL AND &quot;the_answer&quot; IS NOT NULL ;&#39;</span>
+<span class="sd">        &gt;&gt;&gt; params</span>
+<span class="sd">        ()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        
+        <span class="k">def</span> <span class="nf">named_conditions</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+                <span class="n">operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_operators</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">operators_rev</span><span class="p">[</span><span class="n">condition</span><span class="o">.</span><span class="n">operator</span><span class="p">]]</span>
+                <span class="n">property_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">_clean_where_condition</span><span class="p">(</span>
+                    <span class="n">property_name</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        
+        <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">named_conditions</span><span class="p">(</span><span class="n">conditions</span><span class="p">))</span>
+        
+        <span class="c"># We don&#39;t use conditions because others _build_***_request don&#39;t have</span>
+        <span class="c"># access to them.</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Parameter</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">,</span><span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span>
+            <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39;SELECT * FROM </span><span class="si">%s</span><span class="s"> WHERE </span><span class="si">%s</span><span class="s"> ;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39;SELECT * FROM </span><span class="si">%s</span><span class="s"> ;&#39;</span> <span class="o">%</span> <span class="n">table</span>
+
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span>
+    
+    <span class="k">def</span> <span class="nf">_build_update_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return update request as a string and parameters as a list.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; from kalamar._test.corks import CorkItem, CorkDBAPIStorage</span>
+<span class="sd">        &gt;&gt;&gt; table = &#39;table&#39;</span>
+<span class="sd">        &gt;&gt;&gt; storage = CorkDBAPIStorage(url = &#39;toto&#39;, basedir = &#39;tata&#39;,</span>
+<span class="sd">        ...                            content_column = &#39;content_col&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; item = CorkItem(storage,</span>
+<span class="sd">        ...                 storage_properties={&#39;sto_prop&#39;: &#39;sto_val&#39;,</span>
+<span class="sd">        ...                                     &#39;sto_prop2&#39;: None,</span>
+<span class="sd">        ...                                     &#39;pk1&#39;: &#39;pk_val1&#39;,</span>
+<span class="sd">        ...                                     &#39;pk2&#39;: &#39;pk_val2&#39;})</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; request, param = storage._build_update_request(table, item, &#39;qmark&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; request #doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        u&#39;UPDATE &quot;table&quot; SET</span>
+<span class="sd">          &quot;sto_prop&quot;=? , &quot;pk2&quot;=? , &quot;pk1&quot;=? , &quot;content_col&quot;=? , &quot;sto_prop2&quot;=?</span>
+<span class="sd">          WHERE &quot;pk1&quot;=? AND &quot;pk2&quot;=? ;&#39;</span>
+<span class="sd">        &gt;&gt;&gt; param #doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">           (&#39;sto_val&#39;, &#39;pk_val2&#39;, &#39;pk_val1&#39;, &quot;item&#39;s raw data&quot;, None,</span>
+<span class="sd">            &#39;pk_val1&#39;, &#39;pk_val2&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">raw_storage_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        
+        <span class="c"># All not primary keys and all primary keys not None.</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> 
+            <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span> <span class="ow">or</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">,</span> <span class="s">u&#39;UPDATE </span><span class="si">%s</span><span class="s"> SET &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+        
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s">=? , &#39;</span> <span class="o">%</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">key</span><span class="p">)))</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+            
+        <span class="c"># If a content_column has been declared in kalamar configuration, it</span>
+        <span class="c"># becomes an item property (i.e. &#39;_content&#39;), so it is not in the &#39;keys&#39;</span>
+        <span class="c"># list.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+            <span class="n">colname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">))</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s">=? , &#39;</span> <span class="o">%</span> <span class="n">colname</span><span class="p">)</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span> <span class="n">content</span><span class="p">))</span>
+            
+        <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s">=? WHERE &#39;</span> <span class="o">%</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+        
+        <span class="n">where_conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span><span class="p">:</span>
+            <span class="n">quoted_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="n">where_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_clean_where_condition</span><span class="p">(</span><span class="n">quoted_key</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s"> ;&#39;</span> <span class="o">%</span> <span class="s">u&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">where_conditions</span><span class="p">))</span>
+        
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tounicode</span><span class="p">(),</span>
+                                                   <span class="n">parameters</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span>
+    
+    <span class="k">def</span> <span class="nf">_build_insert_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return insert request as a unciode string.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; from kalamar._test.corks import CorkItem, CorkDBAPIStorage</span>
+<span class="sd">        &gt;&gt;&gt; table = &#39;table&#39;</span>
+<span class="sd">        &gt;&gt;&gt; storage = CorkDBAPIStorage(url = &#39;toto&#39;, basedir = &#39;tata&#39;,</span>
+<span class="sd">        ...                            content_column = &#39;content_col&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; item = CorkItem(storage,</span>
+<span class="sd">        ...                 storage_properties={&#39;sto_prop&#39;: &#39;sto_val&#39;,</span>
+<span class="sd">        ...                                     &#39;sto_prop2&#39;: &#39;sto_val2&#39;,</span>
+<span class="sd">        ...                                     &#39;pk1&#39;: &#39;pk_val1&#39;,</span>
+<span class="sd">        ...                                     &#39;pk2&#39;: &#39;pk_val2&#39;})</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; request, param = storage._build_insert_request(table, item, &#39;qmark&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; request #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        u&#39;INSERT INTO &quot;table&quot;</span>
+<span class="sd">          ( &quot;sto_prop&quot; , &quot;pk2&quot; , &quot;pk1&quot; , &quot;content_col&quot; , &quot;sto_prop2&quot; )</span>
+<span class="sd">          VALUES ( ? , ? , ? , ? , ? ) ;&#39;</span>
+<span class="sd">        &gt;&gt;&gt; param #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">            (&#39;sto_val&#39;, &#39;pk_val2&#39;, &#39;pk_val1&#39;, &quot;item&#39;s raw data&quot;, &#39;sto_val2&#39;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        
+        <span class="n">request</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">,</span> <span class="s">u&#39;INSERT INTO </span><span class="si">%s</span><span class="s"> ( &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+        
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">raw_storage_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> 
+            <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_keys</span> <span class="ow">or</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s"> , &#39;</span>
+                       <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">key</span><span class="p">)))</span>
+            
+        <span class="c"># If a content_column has been declared in kalamar configuration, it</span>
+        <span class="c"># becomes an item property (i.e. &#39;_content&#39;), so it is not in the &#39;keys&#39;</span>
+        <span class="c"># list.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">colname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">))</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%s</span><span class="s"> , &#39;</span> <span class="o">%</span> <span class="n">colname</span><span class="p">)</span>
+        
+        <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="s">u&#39;</span><span class="si">%s</span><span class="s"> ) VALUES ( &#39;</span>
+            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quote_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_escape_quotes</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;? , &#39;</span><span class="p">)</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;? , &#39;</span><span class="p">)</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span> <span class="n">content</span><span class="p">))</span>
+        
+        <span class="n">request</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">u&#39;? ) ;&#39;</span><span class="p">)</span>
+        <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parameter</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+        
+        <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tounicode</span><span class="p">(),</span>
+                                                   <span class="n">parameters</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span>
+    
+    <span class="k">def</span> <span class="nf">_convert_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts parameters into corresponding field&#39;s type.</span>
+<span class="sd">        </span>
+<span class="sd">        Dummy method meant to be overriden.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">:</span>
+                <span class="n">parameter</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_module</span><span class="p">()</span><span class="o">.</span><span class="n">Binary</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">parameter</span>
+    
+    <span class="k">def</span> <span class="nf">_format_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format request and parameters according to ``style`` and return them.</span>
+<span class="sd">        </span>
+<span class="sd">        ``parameters`` must be ordered according to the request.</span>
+<span class="sd">        </span>
+<span class="sd">        Fixture</span>
+<span class="sd">        &gt;&gt;&gt; request = &quot;DO STHG INTO TABLE ? WHERE toto=? AND tata=? ;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; parameters = [Parameter(&#39;name&#39;, &#39;table&#39;),</span>
+<span class="sd">        ...               Parameter(&#39;other_name&#39;, &#39;toto&#39;),</span>
+<span class="sd">        ...               Parameter(&#39;yet_a_name&#39;, &#39;tata&#39;)]</span>
+<span class="sd">        &gt;&gt;&gt; storage = DBAPIStorage(url = &#39;toto&#39;, basedir = &#39;tata&#39;,</span>
+<span class="sd">        ...                        content_column = &#39;content_col&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; class db_mod:</span>
+<span class="sd">        ...     BINARY = 1</span>
+<span class="sd">        ...     DATETIME = 1</span>
+<span class="sd">        ...     def Binary(self, data):</span>
+<span class="sd">        ...         return data</span>
+<span class="sd">        &gt;&gt;&gt; storage.get_db_module = lambda: db_mod()</span>
+<span class="sd">        &gt;&gt;&gt; storage.get_table_description = lambda: {</span>
+<span class="sd">        ...     &#39;toto&#39;: {&#39;type_code&#39;: 1}}</span>
+<span class="sd">        </span>
+<span class="sd">        Test</span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;qmark&#39;)</span>
+<span class="sd">        ... #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        (u&#39;DO STHG INTO TABLE ? WHERE toto=? AND tata=? ;&#39;,</span>
+<span class="sd">         (&#39;table&#39;, &#39;toto&#39;, &#39;tata&#39;))</span>
+<span class="sd">         </span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;numeric&#39;)</span>
+<span class="sd">        ... #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        (u&#39;DO STHG INTO TABLE :1 WHERE toto=:2 AND tata=:3 ;&#39;,</span>
+<span class="sd">         (&#39;table&#39;, &#39;toto&#39;, &#39;tata&#39;))</span>
+<span class="sd">         </span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;named&#39;)</span>
+<span class="sd">        ... #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        (u&#39;DO STHG INTO TABLE :name0 WHERE toto=:other_name1 AND tata=:yet_a_name2 ;&#39;,</span>
+<span class="sd">        {u&#39;other_name1&#39;: &#39;toto&#39;, u&#39;name0&#39;: &#39;table&#39;, u&#39;yet_a_name2&#39;: &#39;tata&#39;})</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;format&#39;)</span>
+<span class="sd">        ... #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        (u&#39;DO STHG INTO TABLE %s WHERE toto=%s AND tata=%s ;&#39;,</span>
+<span class="sd">         (&#39;table&#39;, &#39;toto&#39;, &#39;tata&#39;))</span>
+<span class="sd">         </span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;pyformat&#39;)</span>
+<span class="sd">        ... #doctest:+NORMALIZE_WHITESPACE</span>
+<span class="sd">        (u&#39;DO STHG INTO TABLE %(name0)s WHERE toto=%(other_name1)s AND tata=%(yet_a_name2)s ;&#39;,</span>
+<span class="sd">        {u&#39;other_name1&#39;: &#39;toto&#39;, u&#39;name0&#39;: &#39;table&#39;, u&#39;yet_a_name2&#39;: &#39;tata&#39;})</span>
+<span class="sd">         </span>
+<span class="sd">        &gt;&gt;&gt; storage._format_request(request, parameters, &#39;nonexistant&#39;)</span>
+<span class="sd">        Traceback (most recent call last):</span>
+<span class="sd">          ...</span>
+<span class="sd">        UnsupportedParameterStyleError: nonexistant</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;?&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="s">&#39;qmark&#39;</span><span class="p">:</span>
+            <span class="c"># ... WHERE a=? AND b=?</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39;?&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s">&#39;numeric&#39;</span><span class="p">:</span>
+            <span class="c"># ... WHERE a=:1 AND b=:2</span>
+            <span class="n">numbered</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
+            <span class="n">numbered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">numbered</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s">&#39;named&#39;</span><span class="p">:</span>
+            <span class="c"># ... WHERE a=:name0 AND b=:name1</span>
+            <span class="n">named</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+                <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">parameters</span><span class="p">))]</span>
+            <span class="n">named</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">named</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">(</span><span class="s">u&#39;</span><span class="si">%s%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+            
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s">&#39;format&#39;</span><span class="p">:</span>
+            <span class="c"># ... WHERE a=%s AND b=%d</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="s">u&#39;s&#39;</span>
+                <span class="n">request</span> <span class="o">+=</span> <span class="s">u&#39;</span><span class="si">%%%c%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">)</span>
+                
+            
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s">&#39;pyformat&#39;</span><span class="p">:</span>
+            <span class="c"># ... WHERE a=%(name0)s AND a=%(name1)s</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">parameters</span><span class="p">)):</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="s">u&#39;s&#39;</span>
+                <span class="n">request</span> <span class="o">+=</span> <span class="s">u&#39;</span><span class="si">%%</span><span class="s">(</span><span class="si">%s%i</span><span class="s">)</span><span class="si">%c%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="s">u&#39;</span><span class="si">%s%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DBAPIStorage</span><span class="o">.</span><span class="n">UnsupportedParameterStyleError</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">request</span><span class="p">,</span> <span class="n">parameters</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_sql_escape_quotes</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return quote-escaped string.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; DBAPIStorage._sql_escape_quotes(&quot;&#39;aaaa &#39;b&#39; jgfoi&#39;&#39;&quot;)</span>
+<span class="sd">        &quot;&#39;&#39;aaaa &#39;&#39;b&#39;&#39; jgfoi&#39;&#39;&#39;&#39;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; DBAPIStorage._sql_escape_quotes(&quot;teaurt euia etnau&quot;)</span>
+<span class="sd">        &#39;teaurt euia etnau&#39;</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">message</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s">&quot;&#39;&#39;&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_quote_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Quote an SQL ``name`` (e.g. column name) with the appropriate char.</span>
+<span class="sd">        </span>
+<span class="sd">        This method use the character &quot; (double-quotes) by default. It should be</span>
+<span class="sd">        redefined for SGDBs using a different character.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">u&#39;&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">name</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" >kalamar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

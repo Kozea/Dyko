@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kalamar.storage.filesystem &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="../../../index.html" />
+    <link rel="up" title="kalamar" href="../../kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" accesskey="U">kalamar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kalamar.storage.filesystem</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># This file is part of Dyko</span>
+<span class="c"># Copyright © 2008-2009 Kozea</span>
+<span class="c">#</span>
+<span class="c"># This library is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with Kalamar.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Filesystem access point.</span>
+
+<span class="sd">This implementation relies on default python filesystem functions and should</span>
+<span class="sd">work on all platforms.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">werkzeug</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">random</span>
+
+<span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">kalamar.storage.base</span> <span class="kn">import</span> <span class="n">AccessPoint</span>
+<span class="kn">from</span> <span class="nn">kalamar.item</span> <span class="kn">import</span> <span class="n">Item</span>
+
+
+
+<div class="viewcode-block" id="FileSystemStorage"><a class="viewcode-back" href="../../../kalamar.html#kalamar.storage.filesystem.FileSystemStorage">[docs]</a><span class="k">class</span> <span class="nc">FileSystemStorage</span><span class="p">(</span><span class="n">AccessPoint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store items in files.&quot;&quot;&quot;</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="s">&#39;file&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the storage according to the given configuration.</span>
+
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(basedir=&#39;/foo&#39;, url=&#39;file://bar&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; assert isinstance(ap, FileSystemStorage)</span>
+<span class="sd">        &gt;&gt;&gt; import os.path</span>
+<span class="sd">        &gt;&gt;&gt; assert ap.root == os.path.normpath(&#39;/foo/bar&#39;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FileSystemStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">protocol</span> <span class="o">+</span> <span class="s">&#39;://&#39;</span><span class="p">):]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename_format</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;filename_format&#39;</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_storage_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of the properties used for the storage.</span>
+
+<span class="sd">        &gt;&gt;&gt; ap = FileSystemStorage(filename_format=&#39;*/* - *.mp3&#39;, url=&#39;file://&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ap.get_storage_properties()</span>
+<span class="sd">        [&#39;path1&#39;, &#39;path2&#39;, &#39;path3&#39;]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_format</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;path</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">stars</span><span class="p">)]</span>
+            
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">primary_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of path* keys.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_storage_properties</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">_real_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a filesystem filename from a slash-separated path relative </span>
+<span class="sd">        to the access point root.</span>
+
+<span class="sd">        &gt;&gt;&gt; dirname, basename = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; dirname, subdir = os.path.split(dirname)</span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://%s&#39; % dirname)</span>
+<span class="sd">        &gt;&gt;&gt; path = &#39;%s/%s&#39; % (subdir, basename)</span>
+<span class="sd">        &gt;&gt;&gt; assert ap._real_filename(path) == os.path.normpath(__file__)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="o">*</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List files and directories in ``dirname``.</span>
+<span class="sd">        </span>
+<span class="sd">        ``dirname`` is a slash-separated path relative to the access point</span>
+<span class="sd">        root.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; dirname, basename = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://&#39; + dirname)</span>
+<span class="sd">        &gt;&gt;&gt; assert basename in ap.listdir(u&#39;/&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; assert isinstance(ap.listdir(u&#39;/&#39;)[0], unicode)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">isdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if ``dirname`` refers to an existing directory.</span>
+<span class="sd">        </span>
+<span class="sd">        ``dirname`` is a slash-separated path relative to the access point</span>
+<span class="sd">        root.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; dirname, basename = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; dirname, basename = os.path.split(dirname)</span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://%s&#39; % dirname)</span>
+<span class="sd">        &gt;&gt;&gt; assert ap.isdir(basename)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">open_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;rb&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open a file for reading and return a stream.</span>
+
+<span class="sd">        ``filename`` is a slash-separated path relative to the access point</span>
+<span class="sd">        root.</span>
+<span class="sd">        </span>
+<span class="sd">        If opening for writing (ie. &#39;w&#39; in mode), create parent directories</span>
+<span class="sd">        as needed.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; dirname, basename = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://%s&#39; % dirname)</span>
+<span class="sd">        &gt;&gt;&gt; # This test searches for itself</span>
+<span class="sd">        &gt;&gt;&gt; assert &#39;BdM6Zm62gpYFvGlHuNoS&#39; in ap.open_file(basename).read()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;w&#39;</span> <span class="ow">in</span> <span class="n">mode</span> <span class="ow">and</span> <span class="s">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">head</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">head</span><span class="p">:</span>
+                <span class="n">real_head</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
+                <span class="c"># TODO: test parent directories creation</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">real_head</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">real_head</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">mode</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">get_file_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">real_filename</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">real_filename</span><span class="p">:</span>
+            <span class="n">file_descriptor</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_descriptor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">file_descriptor</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">file_descriptor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span>
+        
+    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rename/move a file from ``source`` to ``detination``.</span>
+
+<span class="sd">        ``source`` and ``destination `` are slash-separated paths relative to</span>
+<span class="sd">        the access point root.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">renames</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">source</span><span class="p">),</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">destination</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove a file from the backend.</span>
+
+<span class="sd">        ``filename`` is a slash-separated path relative to the access point</span>
+<span class="sd">        root.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_pattern_to_regexp</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">first_index</span><span class="p">):</span>
+        <span class="s">r&quot;&quot;&quot;Transform a standard pattern with wildcards into a regexp object.</span>
+
+<span class="s">        &gt;&gt;&gt; re_ = FileSystemStorage._pattern_to_regexp(u&#39;[*] * - *.txt&#39;, 3)</span>
+<span class="s">        &gt;&gt;&gt; print re_</span>
+<span class="s">        ^\[(?P&lt;path3&gt;.*)\]\ (?P&lt;path4&gt;.*)\ \-\ (?P&lt;path5&gt;.*)\.txt$</span>
+<span class="s">        &gt;&gt;&gt; re_ = re.compile(re_)</span>
+<span class="s">        &gt;&gt;&gt; re_ # doctest: +ELLIPSIS</span>
+<span class="s">        &lt;_sre.SRE_Pattern object at 0x...&gt;</span>
+<span class="s">        &gt;&gt;&gt; re_.match(u&#39;[au!] ... - .txt&#39;).groups()</span>
+<span class="s">        (u&#39;au!&#39;, u&#39;...&#39;, u&#39;&#39;)</span>
+<span class="s">        &gt;&gt;&gt; # Missing &#39; &#39; after &#39;]&#39;</span>
+<span class="s">        &gt;&gt;&gt; assert re_.match(u&#39;[au!]... - Ô.txt&#39;) is None</span>
+
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">regexp_parts</span><span class="p">():</span>
+            <span class="n">pattern_parts</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="s">&#39;^&#39;</span>
+            <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">pattern_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pattern_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="k">yield</span> <span class="s">&#39;(?P&lt;path</span><span class="si">%i</span><span class="s">&gt;.*)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">first_index</span> <span class="o">+</span> <span class="n">num</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="s">&#39;$&#39;</span>
+
+        <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">regexp_parts</span><span class="p">())</span>
+    
+    <span class="k">def</span> <span class="nf">_storage_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate (properties, file_opener) for all files matching conditions.</span>
+
+<span class="sd">        &gt;&gt;&gt; dirname, module = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; dirname, package = os.path.split(dirname)</span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://%s&#39; % dirname,</span>
+<span class="sd">        ...                           filename_format=&#39;*/*.py&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; from kalamar.site import Site</span>
+<span class="sd">        &gt;&gt;&gt; request = list(Site.parse_request(&#39;path1=&quot;storage&quot;/path2~!=&quot;^__&quot;&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; len([1 for properties, opener in ap._storage_search(request)</span>
+<span class="sd">        ...      if properties[&#39;path2&#39;].startswith(&#39;__&#39;)])</span>
+<span class="sd">        0</span>
+<span class="sd">        &gt;&gt;&gt; len([1 for properties, opener in ap._storage_search(request)</span>
+<span class="sd">        ...     if properties[&#39;path1&#39;] != &#39;storage&#39;])</span>
+<span class="sd">        0</span>
+<span class="sd">        &gt;&gt;&gt; len([1 for properties, opener in ap._storage_search(request)</span>
+<span class="sd">        ...     if (properties[&#39;path1&#39;], properties[&#39;path2&#39;]) == </span>
+<span class="sd">        ...        (&#39;storage&#39;, &#39;filesystem&#39;)])</span>
+<span class="sd">        1</span>
+<span class="sd">        &gt;&gt;&gt; request = Site.parse_request(&#39;path1=&quot;parser&quot;/path2~=&quot;item$&quot;&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; results = [properties[&#39;path2&#39;]</span>
+<span class="sd">        ...            for properties, opener in ap._storage_search(request)]</span>
+<span class="sd">        &gt;&gt;&gt; assert u&#39;textitem&#39; in results</span>
+<span class="sd">        &gt;&gt;&gt; assert u&#39;__init__&#39; not in results</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+        
+        <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">subdir</span><span class="p">,</span> <span class="n">pattern_parts</span><span class="p">,</span> <span class="n">previous_properties</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Walk through ``subdir`` finding files matching ``pattern_parts``.</span>
+
+<span class="sd">            Generate (``properties``, ``file_opener``) for files in ``subdir``</span>
+<span class="sd">            matching ``pattern_parts``, and recursively call ``walk`` with</span>
+<span class="sd">            subdirs in subdir.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c"># We make a copy of pattern_parts here instead of using</span>
+            <span class="c"># pattern_parts.pop(0) because the original list may be used</span>
+            <span class="c"># for other calls to walk()</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pattern_parts</span> <span class="o">=</span> <span class="n">pattern_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">subdir</span><span class="p">):</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="c"># The name matches the pattern, extract the values</span>
+                    <span class="n">properties</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">property_name</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="o">.</span><span class="n">operator</span><span class="p">(</span>
+                                <span class="n">properties</span><span class="p">[</span><span class="n">condition</span><span class="o">.</span><span class="n">property_name</span><span class="p">],</span> 
+                                <span class="n">condition</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+                                <span class="k">break</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c"># All the conditions for the present properties are met</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="s">u&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">subdir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                        <span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">previous_properties</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">pattern_parts</span><span class="p">:</span>
+                                <span class="c"># This is a directory and the filename</span>
+                                <span class="c"># pattern has more parts</span>
+                                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pattern_parts</span><span class="p">,</span>
+                                                   <span class="n">properties</span><span class="p">):</span>
+                                    <span class="k">yield</span> <span class="n">result</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">pattern_parts</span><span class="p">:</span>
+                                <span class="c"># This is a file and the filename</span>
+                                <span class="c"># pattern is completed</span>
+                                <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                                <span class="k">yield</span> <span class="n">properties</span><span class="p">,</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">get_file_content</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">walk</span><span class="p">(</span><span class="s">u&#39;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_pattern_parts</span><span class="p">,</span> <span class="p">())</span>
+            
+    <span class="k">def</span> <span class="nf">_path_from_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rebuild a path from a dict of properties.</span>
+
+<span class="sd">        The path is as accepted by AccessPoint.open_file.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=u&#39;file://&#39;, filename_format=u&#39;*/*.py&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ap._path_from_properties({u&#39;path1&#39;: u&#39;storage&#39;, u&#39;path2&#39;: u&#39;fs&#39;})</span>
+<span class="sd">        u&#39;storage/fs.py&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">path_parts</span><span class="p">():</span>
+            <span class="n">pattern_parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_format</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">pattern_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pattern_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="c"># If no property is set, give a random name instead of None</span>
+                <span class="c"># Closes bug #8</span>
+                <span class="c"># TODO avoid already existing numbers (``hash`` limitation)</span>
+                <span class="k">yield</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s">u&#39;path</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                              <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">random</span><span class="p">())))</span>
+                <span class="k">yield</span> <span class="n">part</span>
+
+        <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_parts</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add/update/move an item.&quot;&quot;&quot;</span>
+        <span class="c"># Storage properties must be unicode strings</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_storage_properties</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">item</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">old_storage_properties</span><span class="p">:</span>
+            <span class="n">old_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_from_properties</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">old_storage_properties</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">old_path</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_from_properties</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">raw_storage_properties</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">modified</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">old_path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">parser_modified</span><span class="p">:</span>
+                <span class="c"># Move only: just rename</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">old_path</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Add or update: serialize content…</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">old_path</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">storage_modified</span><span class="p">:</span>
+                    <span class="c"># Move and update: remove old file</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+                <span class="c"># Add or update: …and write it</span>
+                <span class="n">file_descriptor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;wb&#39;</span><span class="p">)</span>
+                <span class="n">file_descriptor</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="n">file_descriptor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove ``item`` from the backend storage.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path_from_properties</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">old_storage_properties</span><span class="p">))</span>
+            
+    <span class="k">def</span> <span class="nf">filename_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the real filename for ``item``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_filename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path_from_properties</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">raw_storage_properties</span><span class="p">))</span>
+    
+    <span class="nd">@werkzeug.cached_property</span>
+    <span class="nd">@utils.apply_to_result</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">filename_pattern_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_format</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pattern_to_regexp</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">index</span><span class="p">))</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="n">part</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">item_from_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search for an item matching this ``filename``.</span>
+<span class="sd">        ``filename`` has to be os.normpath’d.</span>
+
+<span class="sd">        &gt;&gt;&gt; dirname, module = os.path.split(__file__)</span>
+<span class="sd">        &gt;&gt;&gt; dirname, package = os.path.split(dirname)</span>
+<span class="sd">        &gt;&gt;&gt; dirname = os.path.normpath(dirname)</span>
+<span class="sd">        </span>
+<span class="sd">        ``dirname`` is the path to the kalamar package.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; ap = AccessPoint.from_url(url=&#39;file://%s&#39; % dirname,</span>
+<span class="sd">        ...                           filename_format=&#39;*/*.py&#39;, parser=&#39;text&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; search = ap.item_from_filename</span>
+<span class="sd">        </span>
+<span class="sd">        # all these should return None</span>
+<span class="sd">        &gt;&gt;&gt; search(&#39;/foo/bar&#39;) # do not start with self.root \</span>
+<span class="sd">        # do not match the pattern</span>
+<span class="sd">        &gt;&gt;&gt; search(os.path.join(dirname, &#39;inexistent.py&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; search(os.path.join(dirname, &#39;site.py&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; search(os.path.join(dirname, &#39;storage&#39;, &#39;inexistent.pyc&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; search(os.path.join(dirname, &#39;storage&#39;, &#39;base.pyc&#39;)) \</span>
+<span class="sd">        # matches, but does not exist</span>
+<span class="sd">        &gt;&gt;&gt; search(os.path.join(dirname, &#39;storage&#39;, &#39;inexistent.py&#39;))</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; item = search(os.path.join(dirname, &#39;storage&#39;, &#39;filesystem.py&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; item # doctest: +ELLIPSIS</span>
+<span class="sd">        &lt;TextItem(u&quot;path1=&#39;storage&#39;/path2=&#39;filesystem&#39;&quot; @ None)&gt;</span>
+<span class="sd">        &gt;&gt;&gt; item[&#39;path1&#39;]</span>
+<span class="sd">        &#39;storage&#39;</span>
+<span class="sd">        &gt;&gt;&gt; item[&#39;path2&#39;]</span>
+<span class="sd">        &#39;filesystem&#39;</span>
+<span class="sd">        &gt;&gt;&gt; item.filename == \</span>
+<span class="sd">                os.path.normpath(os.path.splitext(__file__)[0] + &#39;.py&#39;)</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">absolute_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        
+        <span class="c"># relative to the access point root</span>
+        <span class="n">relative_filename</span> <span class="o">=</span> <span class="n">absolute_filename</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">root</span><span class="p">):]</span>
+        
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">relative_filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="k">if</span> <span class="n">part</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename_pattern_parts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">part</span><span class="p">,</span> <span class="n">regexp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_pattern_parts</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">())</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_item</span><span class="p">(</span>
+            <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_file_content</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">real_filename</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">properties</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" >kalamar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

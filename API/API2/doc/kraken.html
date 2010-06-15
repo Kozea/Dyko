@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dyko - Kraken &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="index.html" />
+    <link rel="next" title="Dyko - Koral" href="koral.html" />
+    <link rel="prev" title="Dyko - Kalamar" href="kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="koral.html" title="Dyko - Koral"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kalamar.html" title="Dyko - Kalamar"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Test v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dyko-kraken">
+<h1>Dyko - Kraken<a class="headerlink" href="#dyko-kraken" title="Permalink to this headline">¶</a></h1>
+<p>Kraken is</p>
+<div class="section" id="module-kraken">
+<span id="site"></span><h2>Site<a class="headerlink" href="#module-kraken" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="kraken-http-requests-dispatcher">
+<h3>Kraken - HTTP Requests Dispatcher<a class="headerlink" href="#kraken-http-requests-dispatcher" title="Permalink to this headline">¶</a></h3>
+<p># TODO: write module documentation</p>
+</div>
+<dl class="class">
+<dt id="kraken.Site">
+<em class="property">class </em><tt class="descclassname">kraken.</tt><tt class="descname">Site</tt><big>(</big><em>site_root</em>, <em>kalamar_conf=None</em>, <em>secret_key=None</em>, <em>fail_on_inexistent_parser=True</em><big>)</big><a class="headerlink" href="#kraken.Site" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSGI application from a site root and a kalamar configuration file.</p>
+<dl class="method">
+<dt id="kraken.Site.find_template">
+<tt class="descname">find_template</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#kraken.Site.find_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the template at <tt class="docutils literal"><span class="pre">path</span></tt>.</p>
+<p>Search for an existing template named &lt;path&gt;/index.&lt;type&gt;.&lt;engine&gt;
+or &lt;path&gt;.&lt;type&gt;.&lt;engine&gt; where &lt;engine&gt; is a koral engine name.</p>
+<p>Return (template_name, type, engine) for the first one found or None.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">test.kraken</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">kraken</span><span class="o">.</span><span class="n">make_site</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Directory stucture of site.site_root:</dt>
+<dd><p class="first">index.html.genshi
+hello.html.jinja2
+hello/</p>
+<blockquote>
+index.genshi # No &lt;type&gt;
+index.html # No &lt;engine&gt;
+index.html.foo # Non-existent &lt;engine&gt;</blockquote>
+<dl class="last docutils">
+<dt>lorem/</dt>
+<dd>index.txt.jinja2</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/&#39;</span><span class="p">)</span>
+<span class="go">(u&#39;index.html.genshi&#39;, u&#39;html&#39;, u&#39;genshi&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/nonexistent&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/hello/&#39;</span><span class="p">)</span>
+<span class="go">(u&#39;hello.html.jinja2&#39;, u&#39;html&#39;, u&#39;jinja2&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/hello/world&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/lorem/&#39;</span><span class="p">)</span>
+<span class="go">(u&#39;lorem/index.txt.jinja2&#39;, u&#39;txt&#39;, u&#39;jinja2&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">find_template</span><span class="p">(</span><span class="s">u&#39;/lorem/ipsum&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.handle_python">
+<tt class="descname">handle_python</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.handle_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try handling a <tt class="docutils literal"><span class="pre">request</span></tt> with a python controller.</p>
+<p>Return a Response object or raise NotFound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.handle_request">
+<tt class="descname">handle_request</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.handle_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.handle_simple_template">
+<tt class="descname">handle_simple_template</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.handle_simple_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try handling a request with only a template.</p>
+<p>Return a Response object or raise NotFound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.handle_static_file">
+<tt class="descname">handle_static_file</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.handle_static_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try handling a request with a static file.</p>
+<p>The request path is interpreted as a filename relative to the site root.
+Return a Response object or raise NotFound.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="kraken.Site.handle_trailing_slash">
+<em class="property">static </em><tt class="descname">handle_trailing_slash</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.handle_trailing_slash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect if <tt class="docutils literal"><span class="pre">request.path</span></tt> has no trailing slash.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.import_">
+<tt class="descname">import_</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#kraken.Site.import_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper for python controllers to &#8220;import&#8221; other controllers.</p>
+<p>Return a module object.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">test.kraken</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">kraken</span><span class="o">.</span><span class="n">make_site</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">module</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s">&#39;inexistent&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ImportError</span>: <span class="n-Identifier">No module named inexistent</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s">&#39;lorem.ipsum&#39;</span><span class="p">)</span> 
+<span class="gp">... </span>                            
+<span class="go">&lt;module &#39;kraken_site_....lorem.ipsum&#39; </span>
+<span class="go">    from &#39;...test/kraken/site/lorem/ipsum.py...&#39;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.make_request">
+<tt class="descname">make_request</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#kraken.Site.make_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.process_response">
+<tt class="descname">process_response</tt><big>(</big><em>request</em>, <em>response</em><big>)</big><a class="headerlink" href="#kraken.Site.process_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.simple_template_context">
+<tt class="descname">simple_template_context</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#kraken.Site.simple_template_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.Site.template_response">
+<tt class="descname">template_response</tt><big>(</big><em>request</em>, <em>template_name</em>, <em>values=None</em>, <em>extension=None</em>, <em>engine=None</em><big>)</big><a class="headerlink" href="#kraken.Site.template_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a response for <tt class="docutils literal"><span class="pre">request</span></tt> according to given parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">test.kraken</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">kraken</span><span class="o">.</span><span class="n">make_site</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">req</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">make_request</span><span class="p">({})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">template_response</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">extension and engine not provided but template_name does not match *.&lt;extension&gt;.&lt;engine&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">site</span><span class="o">.</span><span class="n">template_response</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="p">{},</span> <span class="s">&#39;html&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">TypeError</span>: <span class="n-Identifier">Can provide both of extension and engine or neither, but not only one</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">template_response</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;index.html.genshi&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span><span class="o">.</span><span class="n">mimetype</span>
+<span class="go">&#39;text/html&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">template_response</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;index.html.genshi&#39;</span><span class="p">,</span> <span class="p">{},</span>
+<span class="gp">... </span>                                  <span class="s">&#39;html&#39;</span><span class="p">,</span> <span class="s">&#39;genshi&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span><span class="o">.</span><span class="n">mimetype</span>
+<span class="go">&#39;text/html&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kraken.Site.template_suffix_re">
+<tt class="descname">template_suffix_re</tt><a class="headerlink" href="#kraken.Site.template_suffix_re" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cache">
+<h2>Cache<a class="headerlink" href="#cache" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kraken.cached_kalamar.CachedKalamarSite">
+<em class="property">class </em><tt class="descclassname">kraken.cached_kalamar.</tt><tt class="descname">CachedKalamarSite</tt><big>(</big><em>kalamar_site</em><big>)</big><a class="reference internal" href="_modules/kraken/cached_kalamar.html#CachedKalamarSite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.cached_kalamar.CachedKalamarSite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kalamar cache wrapper.</p>
+<dl class="docutils">
+<dt>Wrapper for kalamar that caches results of the following methods:</dt>
+<dd><tt class="docutils literal"><span class="pre">isearch</span></tt>, <tt class="docutils literal"><span class="pre">search</span></tt>, <tt class="docutils literal"><span class="pre">open</span></tt>, <tt class="docutils literal"><span class="pre">item_from_filename</span></tt></dd>
+<dt>All cached entries are removed when the following methods are called:</dt>
+<dd><tt class="docutils literal"><span class="pre">save</span></tt>, <tt class="docutils literal"><span class="pre">remove</span></tt></dd>
+</dl>
+<p>Warning: arguments for cached methods must be hashable.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">FakeKalamar</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="s">&#39;search&#39;</span><span class="p">,</span> <span class="n">x</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="s">&#39;save&#39;</span><span class="p">,</span> <span class="n">y</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="s">&#39;remove&#39;</span><span class="p">,</span> <span class="n">y</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">item_from_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="n">z</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+<span class="gp">... </span>    <span class="n">ObjectDoesNotExist</span> <span class="o">=</span> <span class="ne">StandardError</span><span class="p">(</span><span class="s">&#39;Object does not exist&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">MultipleObjectsReturned</span> <span class="o">=</span> <span class="ne">StandardError</span><span class="p">(</span><span class="s">&#39;Multiple objects&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span> <span class="o">=</span> <span class="n">CachedKalamarSite</span><span class="p">(</span><span class="n">FakeKalamar</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">search 2</span>
+<span class="go">[3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">search 5</span>
+<span class="go">[6]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c"># result is cached: FakeKalamar.search is not called</span>
+<span class="go">[3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">kalamar</span><span class="o">.</span><span class="n">isearch</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="k">print</span> <span class="n">i</span> <span class="c"># result is cached too with isearch</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">save -1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c"># cache has been invalidated</span>
+<span class="go">search 2</span>
+<span class="go">[1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c"># result is cached</span>
+<span class="go">[1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">remove 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c"># cache has been invalidated</span>
+<span class="go">search 2</span>
+<span class="go">[1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">item_from_filename</span><span class="p">(</span><span class="s">&#39;6&#39;</span><span class="p">)</span>
+<span class="go">filename 6</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">item_from_filename</span><span class="p">(</span><span class="s">&#39;6&#39;</span><span class="p">)</span> <span class="c"># result is cached</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;2&#39;</span><span class="p">)</span> <span class="c"># &#39;2&#39; is no int, return nothing</span>
+<span class="go">search 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;2&#39;</span><span class="p">)</span> <span class="c"># &#39;2&#39; is no int, raise Error</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="nc">StandardError</span>: <span class="n-Identifier">Object does not exist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span> <span class="c"># &#39;*&#39; means [1,2,3], raise Error</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="nc">StandardError</span>: <span class="n-Identifier">Multiple objects</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kalamar</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
+<span class="go">test -1</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="kraken.cached_kalamar.CachedKalamarSite.open">
+<tt class="descname">open</tt><big>(</big><em>access_point</em>, <em>request=None</em><big>)</big><a class="reference internal" href="_modules/kraken/cached_kalamar.html#CachedKalamarSite.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.cached_kalamar.CachedKalamarSite.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the item in access_point matching request.</p>
+<p>If there is no result, raise <tt class="docutils literal"><span class="pre">Site.ObjectDoesNotExist</span></tt>.
+If there are more than 1 result, raise <tt class="docutils literal"><span class="pre">Site.MultipleObjectsReturned</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.cached_kalamar.CachedKalamarSite.remove">
+<tt class="descname">remove</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/kraken/cached_kalamar.html#CachedKalamarSite.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.cached_kalamar.CachedKalamarSite.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kraken.cached_kalamar.CachedKalamarSite.save">
+<tt class="descname">save</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/kraken/cached_kalamar.html#CachedKalamarSite.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.cached_kalamar.CachedKalamarSite.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-kraken.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-kraken.utils" title="Permalink to this headline">¶</a></h2>
+<p>Various utilities for Kraken.</p>
+<dl class="function">
+<dt id="kraken.utils.make_absolute_url">
+<tt class="descclassname">kraken.utils.</tt><tt class="descname">make_absolute_url</tt><big>(</big><em>request</em>, <em>url</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#make_absolute_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.make_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a clean absolute URL from <tt class="docutils literal"><span class="pre">request</span></tt> and <tt class="docutils literal"><span class="pre">url</span></tt>.</p>
+<p># fake request for <a class="reference external" href="http://localhost/foo/">http://localhost/foo/</a>
+&gt;&gt;&gt; request = Request(werkzeug.create_environ(path=&#8217;/foo/&#8217;))</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;http://localhost/foo/bar/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/foo/bar/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;/foo/bar/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/foo/bar/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;./bar/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/foo/bar/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;bar/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/foo/bar/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;../bar/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/bar/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_absolute_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/&#39;</span>
+</pre></div>
+</div>
+<p># Same tests without the trailing slash
+&gt;&gt;&gt; make_absolute_url(request, &#8216;<a class="reference external" href="http://localhost/foo/bar">http://localhost/foo/bar</a>&#8216;)
+&#8216;<a class="reference external" href="http://localhost/foo/bar">http://localhost/foo/bar</a>&#8216;
+&gt;&gt;&gt; make_absolute_url(request, &#8216;/foo/bar&#8217;)
+&#8216;<a class="reference external" href="http://localhost/foo/bar">http://localhost/foo/bar</a>&#8216;
+&gt;&gt;&gt; make_absolute_url(request, &#8216;./bar&#8217;)
+&#8216;<a class="reference external" href="http://localhost/foo/bar">http://localhost/foo/bar</a>&#8216;
+&gt;&gt;&gt; make_absolute_url(request, &#8216;bar&#8217;)
+&#8216;<a class="reference external" href="http://localhost/foo/bar">http://localhost/foo/bar</a>&#8216;
+&gt;&gt;&gt; make_absolute_url(request, &#8216;../bar&#8217;)
+&#8216;<a class="reference external" href="http://localhost/bar">http://localhost/bar</a>&#8216;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kraken.utils.redirect">
+<tt class="descclassname">kraken.utils.</tt><tt class="descname">redirect</tt><big>(</big><em>request</em>, <em>url</em>, <em>status=302</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#redirect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.redirect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect client to relative or absolute <tt class="docutils literal"><span class="pre">url</span></tt> with <tt class="docutils literal"><span class="pre">status</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Request.application</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">test_app</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;redirect_to&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                    <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">,</span> <span class="mi">302</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">werkzeug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">test_app</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;/foo?redirect_to=../bar&#39;</span><span class="p">)</span> 
+<span class="go">(..., &#39;302 FOUND&#39;, [...(&#39;Location&#39;, &#39;http://localhost/bar&#39;)...)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;/foo?redirect_to=/&#39;</span><span class="p">)</span> 
+<span class="go">(..., &#39;302 FOUND&#39;, [...(&#39;Location&#39;, &#39;http://localhost/&#39;)...)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kraken.utils.Request">
+<em class="property">class </em><tt class="descclassname">kraken.utils.</tt><tt class="descname">Request</tt><big>(</big><em>environ</em>, <em>session_secret_key=None</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#Request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.Request" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+<dl class="attribute">
+<dt id="kraken.utils.Request.session">
+<tt class="descname">session</tt><a class="reference internal" href="_modules/kraken/utils.html#Request.session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.Request.session" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="kraken.utils.Response">
+<em class="property">class </em><tt class="descclassname">kraken.utils.</tt><tt class="descname">Response</tt><big>(</big><em>response=None</em>, <em>status=None</em>, <em>headers=None</em>, <em>mimetype=None</em>, <em>content_type=None</em>, <em>direct_passthrough=False</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#Response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.Response" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO docstring.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="kraken.utils.StaticFileResponse">
+<em class="property">class </em><tt class="descclassname">kraken.utils.</tt><tt class="descname">StaticFileResponse</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#StaticFileResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.StaticFileResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Respond with the a static file.</p>
+<p>Respond with a static file, guessing the mimitype from the filename,
+and using WSGI’s <tt class="docutils literal"><span class="pre">file_wrapper</span></tt> when available.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kraken.utils.arg_count">
+<tt class="descclassname">kraken.utils.</tt><tt class="descname">arg_count</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#arg_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.arg_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the nubmer of explicit arguments the function takes.</p>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>args and <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs arguments are excluded.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">arg_count</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arg_count</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arg_count</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="kraken.utils.runserver">
+<tt class="descclassname">kraken.utils.</tt><tt class="descname">runserver</tt><big>(</big><em>site</em>, <em>args=None</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#runserver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.runserver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a developpement server for the given Kraken <tt class="docutils literal"><span class="pre">site</span></tt>.</p>
+<p>Setup test
+&gt;&gt;&gt; real_argv = sys.argv
+&gt;&gt;&gt; import logging
+&gt;&gt;&gt; logging.getLogger(&#8216;werkzeug&#8217;).setLevel(logging.FATAL)</p>
+<p>Test
+&gt;&gt;&gt; runserver(None, [&#8216;&#8211;help&#8217;]) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+usage: ...
+&gt;&gt;&gt; sys.argv = [sys.argv[0]]
+&gt;&gt;&gt; try: runserver(None, [&#8216;&#8211;port=1&#8217;]) # doctest: +ELLIPSIS
+... except Exception, e: print e[1]
+Permission denied
+&gt;&gt;&gt; sys.argv = [sys.argv[0], &#8216;&#8211;help&#8217;]
+&gt;&gt;&gt; runserver(None) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+usage: ...</p>
+<p>Restore real argv
+&gt;&gt;&gt; sys.argv = real_argv</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="kraken.utils.KalamarSiteForKraken">
+<em class="property">class </em><tt class="descclassname">kraken.utils.</tt><tt class="descname">KalamarSiteForKraken</tt><big>(</big><em>config_filename=None</em>, <em>fail_on_inexistent_parser=True</em><big>)</big><a class="reference internal" href="_modules/kraken/utils.html#KalamarSiteForKraken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kraken.utils.KalamarSiteForKraken" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dyko - Kraken</a><ul>
+<li><a class="reference internal" href="#module-kraken">Site</a><ul>
+<li><a class="reference internal" href="#kraken-http-requests-dispatcher">Kraken - HTTP Requests Dispatcher</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cache">Cache</a></li>
+<li><a class="reference internal" href="#module-kraken.utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kalamar.html"
+                        title="previous chapter">Dyko - Kalamar</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="koral.html"
+                        title="next chapter">Dyko - Koral</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/kraken.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="koral.html" title="Dyko - Koral"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="kalamar.html" title="Dyko - Kalamar"
+             >previous</a> |</li>
+        <li><a href="index.html">Test v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

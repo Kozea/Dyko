@@ -1,0 +1,25 @@
+
+Dyko - Reference
+****************
+
+Dyko is a framework web
+
+Release:
+   0.2
+
+Date:
+   June 15, 2010
+
+* Dyko - Kalamar
+  * Site
+  * Item
+  * Parser
+  * Storage
+  * Utils
+* Dyko - Kraken
+  * Site
+  * Cache
+  * Utils
+* Dyko - Koral
+  * Site
+  * Utils

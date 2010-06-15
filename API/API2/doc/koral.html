@@ -1,0 +1,160 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dyko - Koral &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="index.html" />
+    <link rel="prev" title="Dyko - Kraken" href="kraken.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kraken.html" title="Dyko - Kraken"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Test v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dyko-koral">
+<h1>Dyko - Koral<a class="headerlink" href="#dyko-koral" title="Permalink to this headline">¶</a></h1>
+<p>Koral is</p>
+<div class="section" id="module-koral">
+<span id="site"></span><h2>Site<a class="headerlink" href="#module-koral" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="koral-templates-management-library">
+<h3>Koral - Templates Management Library<a class="headerlink" href="#koral-templates-management-library" title="Permalink to this headline">¶</a></h3>
+<p># TODO: write module documentation</p>
+</div>
+<dl class="class">
+<dt id="koral.Site">
+<em class="property">class </em><tt class="descclassname">koral.</tt><tt class="descname">Site</tt><big>(</big><em>path_to_root</em><big>)</big><a class="headerlink" href="#koral.Site" title="Permalink to this definition">¶</a></dt>
+<dd><p>Koral site.</p>
+<dl class="method">
+<dt id="koral.Site.render">
+<tt class="descname">render</tt><big>(</big><em>site_engine</em>, <em>template_name</em>, <em>values={}</em>, <em>lang=None</em>, <em>modifiers=None</em><big>)</big><a class="headerlink" href="#koral.Site.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand to the engine render method.</p>
+<p>TODO test &amp; doc</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-koral.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-koral.utils" title="Permalink to this headline">¶</a></h2>
+<p>Various helpers and utils for Koral.</p>
+<dl class="function">
+<dt id="koral.utils.recursive_subclasses">
+<tt class="descclassname">koral.utils.</tt><tt class="descname">recursive_subclasses</tt><big>(</big><em>class_</em><big>)</big><a class="reference internal" href="_modules/koral/utils.html#recursive_subclasses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#koral.utils.recursive_subclasses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all <tt class="docutils literal"><span class="pre">class_</span></tt> subclasses recursively.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="koral.utils.indent">
+<tt class="descclassname">koral.utils.</tt><tt class="descname">indent</tt><big>(</big><em>text</em>, <em>indent_level</em><big>)</big><a class="reference internal" href="_modules/koral/utils.html#indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#koral.utils.indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indent text with <tt class="docutils literal"><span class="pre">indent_level</span></tt> spaces.</p>
+<p>Trailing and leading blank lines are removed.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">indent</span><span class="p">(</span><span class="s">u&#39;</span><span class="se">\n\n</span><span class="s">Lorem ipsum dolor sit amet.</span><span class="se">\n</span><span class="s">&#39;</span>
+<span class="gp">... </span>       <span class="s">u&#39;  Maecenas malesuada iaculis luctus.</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">u&#39;  Lorem ipsum dolor sit amet.\n    Maecenas malesuada iaculis luctus.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dyko - Koral</a><ul>
+<li><a class="reference internal" href="#module-koral">Site</a><ul>
+<li><a class="reference internal" href="#koral-templates-management-library">Koral - Templates Management Library</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-koral.utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kraken.html"
+                        title="previous chapter">Dyko - Kraken</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/koral.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kraken.html" title="Dyko - Kraken"
+             >previous</a> |</li>
+        <li><a href="index.html">Test v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>

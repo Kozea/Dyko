@@ -1,0 +1,45 @@
+
+Dyko - Koral
+************
+
+Koral is
+
+
+Site
+====
+
+
+Koral - Templates Management Library
+------------------------------------
+
+# TODO: write module documentation
+
+class class koral.Site(path_to_root)
+
+   Koral site.
+
+   render(site_engine, template_name, values={}, lang=None, modifiers=None)
+
+      Shorthand to the engine render method.
+
+      TODO test & doc
+
+
+Utils
+=====
+
+Various helpers and utils for Koral.
+
+koral.utils.recursive_subclasses(class_)
+
+   Return all ``class_`` subclasses recursively.
+
+koral.utils.indent(text, indent_level)
+
+   Indent text with ``indent_level`` spaces.
+
+   Trailing and leading blank lines are removed.
+
+   >>> indent(u'\n\nLorem ipsum dolor sit amet.\n'
+   ...        u'  Maecenas malesuada iaculis luctus.\n\n', 2)
+   u'  Lorem ipsum dolor sit amet.\n    Maecenas malesuada iaculis luctus.'

@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kalamar.parser.rest &mdash; Test v0.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Test v0.2 documentation" href="../../../index.html" />
+    <link rel="up" title="kalamar" href="../../kalamar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" accesskey="U">kalamar</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for kalamar.parser.rest</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># This file is part of Dyko</span>
+<span class="c"># Copyright © 2008-2009 Kozea</span>
+<span class="c">#</span>
+<span class="c"># This library is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with Kalamar.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">ReStructuredText.</span>
+
+<span class="sd">Metadata extraction using docutils is kinda slow, so the results of</span>
+<span class="sd">``extract_metadata`` are cached.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">docutils.core</span>
+    <span class="kn">import</span> <span class="nn">docutils.nodes</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Can not import docutils. &#39;</span>
+                  <span class="s">&#39;RestItem will not be available.&#39;</span><span class="p">,</span>
+                  <span class="ne">ImportWarning</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">kalamar.item</span> <span class="kn">import</span> <span class="n">CapsuleItem</span>
+    <span class="kn">from</span> <span class="nn">kalamar.parser.textitem</span> <span class="kn">import</span> <span class="n">TextItem</span>
+    <span class="kn">from</span> <span class="nn">kalamar</span> <span class="kn">import</span> <span class="n">utils</span>
+    
+    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="kn">import</span> <span class="nn">os.path</span>
+    
+    <span class="n">_test_document</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">===============</span>
+<span class="s">A test document</span>
+<span class="s">===============</span>
+<span class="s">:date: 2009-08-04</span>
+<span class="s">:abstract: Lorem ipsum dolor sit amet, consectetur adipiscing.</span>
+<span class="s">           Suspendisse fringilla accumsan sem eget ullamcorper.</span>
+<span class="s">           Aliquam erat volutpat.</span>
+
+<span class="s">.. contents::</span>
+
+<span class="s">.. include:: nonexistent.rst</span>
+
+<span class="s">Etiam a turpis erat, ac scelerisque nisl. Pellentesque habitant</span>
+<span class="s">morbi tristique senectus et netus et malesuada fames ac turpis</span>
+<span class="s">egestas.</span>
+
+<span class="s">.. include:: foo/bar.rst</span>
+<span class="s">.. include:: name with whitespaces.rst  </span>
+<span class="s">.. .. include:: commented.rst</span>
+
+<span class="s">&quot;&quot;&quot;</span>
+    
+
+
+    <span class="k">def</span> <span class="nf">extract_includes</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of included filenames in the given ReST string.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; list(extract_includes(_test_document))</span>
+<span class="sd">        ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        [(u&#39;include&#39;, u&#39;nonexistent.rst&#39;),</span>
+<span class="sd">         (u&#39;include&#39;, u&#39;foo/bar.rst&#39;),</span>
+<span class="sd">         (u&#39;include&#39;, u&#39;name with whitespaces.rst&#39;)]</span>
+
+<span class="sd">        # TODO: test other directives</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">extract_includes</span><span class="o">.</span><span class="n">_re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">extract_includes</span><span class="o">.</span><span class="n">_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="s">u&#39;^\s*.. (include)::\s+(.+?)\s*$&#39;</span><span class="p">,</span>
+        <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        
+
+
+    <span class="nd">@utils.simple_cache</span>
+    <span class="k">def</span> <span class="nf">extract_metadata</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="s">r&quot;&quot;&quot;Return a dict of metadata for the given ReST string.</span>
+<span class="s">        </span>
+<span class="s">        Search for a docutils.nodes.title and a docutils.nodes.field_list</span>
+<span class="s">        element in the docutils document tree.</span>
+<span class="s">        </span>
+<span class="s">        &gt;&gt;&gt; sorted(extract_metadata(_test_document).items())</span>
+<span class="s">        ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="s">        [(u&#39;abstract&#39;, u&#39;Lorem ipsum dolor sit amet, consectetur</span>
+<span class="s">                         adipiscing.\nSuspendisse fringilla accumsan sem eget</span>
+<span class="s">                         ullamcorper.\nAliquam erat volutpat.&#39;),</span>
+<span class="s">         (u&#39;date&#39;, u&#39;2009-08-04&#39;),</span>
+<span class="s">         (u&#39;title&#39;, u&#39;A test document&#39;)]</span>
+
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">docutils</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">publish_doctree</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">settings_overrides</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">&#39;file_insertion_enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="c"># do not follow includes</span>
+            <span class="s">&#39;report_level&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="c"># do not warn that they weren’t followed</span>
+            <span class="s">&#39;docinfo_xform&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">})</span> <span class="c"># do not interpret bibliographic fields</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">tree</span><span class="p">:</span>
+            <span class="c"># Search for a title and a field_list</span>
+            <span class="c"># Break when we found them both</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">docutils</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">title</span><span class="p">):</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">docutils</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">field_list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_body</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                    <span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="o">.</span><span class="n">astext</span><span class="p">()]</span> <span class="o">=</span> <span class="n">field_body</span><span class="o">.</span><span class="n">astext</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fields</span> <span class="ow">and</span> <span class="n">title</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">u&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="k">return</span> <span class="n">fields</span>
+
+
+
+<div class="viewcode-block" id="RestAtom"><a class="viewcode-back" href="../../../kalamar.html#kalamar.parser.rest.RestAtom">[docs]</a>    <span class="k">class</span> <span class="nc">RestAtom</span><span class="p">(</span><span class="n">TextItem</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This parser simply exposes ReST metadata as properties.</span>
+<span class="sd">        </span>
+<span class="sd">        These properties are read-only: your modifications will *not* be saved</span>
+<span class="sd">        if you change them.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;rest&#39;</span>
+        
+        <span class="k">def</span> <span class="nf">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c"># TODO: test</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RestAtom</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_parse_data</span><span class="p">()</span>
+            <span class="c"># assume extract_metadata never return a &#39;text&#39; property</span>
+            <span class="c"># or the ReST text will be overwritten</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extract_metadata</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="n">properties</span>
+        
+
+</div>
+    <span class="k">class</span> <span class="nc">MissingItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Missing ReST item.</span>
+
+<span class="sd">        Placeholder in RestCapsule subitems used when an ``include`` directive</span>
+<span class="sd">        has a filename that matches no item in the current site.</span>
+
+<span class="sd">        Instances evaluate to False in a boolean context so that you can</span>
+<span class="sd">        easily test whether an Item is “missing”.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; item = MissingItem(&#39;foo&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; if item: print &#39;OK&#39;</span>
+<span class="sd">        ... else: print &#39;KO&#39;</span>
+<span class="sd">        KO</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">association_properties</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> </span><span class="si">%r</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        
+        <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+
+
+<div class="viewcode-block" id="RestCapsule"><a class="viewcode-back" href="../../../kalamar.html#kalamar.parser.rest.RestCapsule">[docs]</a>    <span class="k">class</span> <span class="nc">RestCapsule</span><span class="p">(</span><span class="n">CapsuleItem</span><span class="p">,</span> <span class="n">RestAtom</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A ReStructuredText capsule.</span>
+<span class="sd">        </span>
+<span class="sd">        The ReST document is only made of metadata and :include: directives.</span>
+<span class="sd">        Any other content (such as text) is discarded and will be lost when</span>
+<span class="sd">        the capsule is saved.</span>
+<span class="sd">        </span>
+<span class="sd">        Metadata are exposed as properties, and :include:’s as subitems.</span>
+<span class="sd">        The filenames are resolved to the actual kalamar items, or a MissingItem</span>
+<span class="sd">        if no item matched the filename.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;rest_capsule&#39;</span>
+        
+        <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;fulltext&#39;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.. include::&#39;</span><span class="p">):</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.. include::&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+                        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_access_point</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">item_from_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                        <span class="n">output</span> <span class="o">+=</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;fulltext&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">output</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+                <span class="k">return</span> <span class="n">output</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RestCapsule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_load_subitems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_content</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">include</span> <span class="ow">in</span> <span class="n">extract_includes</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">include</span><span class="p">))</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_access_point</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">item_from_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="c"># item is None if no access point has this filename</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">item</span> <span class="ow">or</span> <span class="n">MissingItem</span><span class="p">(</span><span class="n">include</span><span class="p">)</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">association_properties</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datatype</span>
+                <span class="k">yield</span> <span class="n">item</span>
+       
+        <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">write</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">append</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_parser_properties</span><span class="p">[</span><span class="s">u&#39;title&#39;</span><span class="p">]</span>
+            <span class="n">write</span><span class="p">(</span><span class="s">u&#39;=&#39;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">))</span>
+            <span class="n">write</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="n">write</span><span class="p">(</span><span class="s">u&#39;=&#39;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_parser_properties</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">u&#39;title&#39;</span><span class="p">,</span> <span class="s">u&#39;text&#39;</span><span class="p">):</span>
+                    <span class="n">write</span><span class="p">(</span><span class="s">u&#39;:</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+            <span class="n">write</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">subitem</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subitems</span><span class="p">:</span>
+                <span class="n">write</span><span class="p">(</span><span class="s">u&#39;.. </span><span class="si">%s</span><span class="s">:: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">subitem</span><span class="o">.</span><span class="n">association_properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;include&#39;</span><span class="p">),</span>
+                    <span class="n">utils</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">subitem</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="s">u&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Test v0.2 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../kalamar.html" >kalamar</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Test.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+  </body>
+</html>
