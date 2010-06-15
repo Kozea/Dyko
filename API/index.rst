@@ -12,6 +12,7 @@ Dyko is a framework web
     kalamar.rst
     kraken.rst
     koral.rst
+    utils.rst
 
 Kalamar
 -------
