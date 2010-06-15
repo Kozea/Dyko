@@ -5,26 +5,21 @@ Dyko - Reference
 Dyko is a framework web
 
 
-.. toctree::
-    
-    :maxdepth: 2
-
-    kalamar.rst
-    kraken.rst
-    koral.rst
-
 Kalamar
 -------
-.. automodule: kalamar
+.. toctree::
 
-
+    kalamar.rst
 
 Kraken
 ------
-.. automodule: kraken
+.. toctree::
 
+    kraken.rst
 
 Koral
 -----
-.. automodule: koral
+.. toctree::
+
+    koral.rst
 

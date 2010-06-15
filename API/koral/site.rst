@@ -1,8 +1,7 @@
 Site
 ====
 
-.. automodule:: kraken.site
+.. automodule:: koral.site
 
 .. autoclass:: Site
     :members:
- 
