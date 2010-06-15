@@ -36,7 +36,7 @@ Parser
 
 Utils
 -----
-.. automodule: utils
+.. automodule: kalamar.utils
 
 
 .. _Python: http://www.python.org
