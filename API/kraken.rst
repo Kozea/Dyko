@@ -1,12 +1,29 @@
-=============
-Dyko - Kraken
-=============
+******
+Kraken
+******
 
+Kraken is
 
-.. toctree::
-
-    :maxdepth: 2
+Site
+====
+.. automodule:: kraken
+.. autoclass:: kraken.Site
+    :members: 
     
-    kraken/cached_kalamar.rst
-    kraken/site.rst
-    kraken/utils.rst
+Cache
+=====
+.. autoclass:: kraken.cached_kalamar.CachedKalamarSite
+    :members:    
+    
+Utils
+=====
+.. automodule:: kraken.utils
+    :members: make_absolute_url,
+	      redirect,
+	      Request,
+	      Response,
+	      StaticFileResponse,
+	      arg_count,
+	      runserver
+.. autoclass:: KalamarSiteForKraken
+    

@@ -1,10 +1,18 @@
-============
-Dyko - Koral 
-============
+*****
+Koral
+*****
 
-.. toctree::
+Koral is
 
-    :maxdepth: 2
+Site
+====
+.. automodule:: koral
+.. autoclass:: Site
+    :members:
+    
+Utils
+=====
 
-    koral/site.rst
-    koral/utils.rst
+.. automodule:: koral.utils
+    :members: recursive_subclasses,
+	          indent    

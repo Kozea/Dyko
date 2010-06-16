@@ -1,8 +1,0 @@
-Site
-====
-
-.. automodule:: kraken.site
-
-.. autoclass:: Site
-    :members:
- 
