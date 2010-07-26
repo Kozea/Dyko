@@ -1,0 +1,8 @@
+{% extends "_layout.jinja2" %}
+
+{% set helpers = import_('helpers') %}
+{% set item = request.kalamar.open('page', {'id':(request.values['page'] or 'home'), 'project': request.values['project_name']}) %}
+
+{% block content %}
+{{ helpers.rest_to_article(item) }}
+{% endblock content %}
