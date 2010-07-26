@@ -1,0 +1,9 @@
+{
+  "title": "Dyko",
+  "menu": [
+    {"name": "Home", "link": "/home"},
+    {"name": "Download", "link": "/download"},
+    {"name": "Documentation", "link": "/documentation"},
+    {"name": "Blogs", "link": "/blogs"}
+  ]
+}
