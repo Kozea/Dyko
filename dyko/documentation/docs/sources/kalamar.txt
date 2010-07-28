@@ -1,0 +1,28 @@
+Kalamar
+*******
+
+.. automodule:: kalamar
+
+.. automodule:: kalamar.site
+
+.. automodule:: kalamar.item
+
+.. automodule:: kalamar.utils
+
+.. automodule:: kalamar.requestparser
+
+.. automodule:: kalamar.parser
+    :members:
+    
+    .. toctree::
+        :numbered:
+        
+        parser.rst
+
+.. automodule:: kalamar.storage
+    :members:
+    
+    .. toctree::
+        :numbered:
+        
+        storage.rst

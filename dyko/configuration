@@ -1,0 +1,10 @@
+{
+  "title": "Dyko",
+  "menu": [
+    {"name": "Home", "link": "/home"},
+    {"name": "Download", "link": "/download"},
+    {"name": "Documentation", "link": "http://documentation.dyko.org"},
+    {"name": "Tutorial", "link": "/tutorial"},
+    {"name": "News", "link": "/news"}
+  ]
+}

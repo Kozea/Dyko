@@ -1,0 +1,13 @@
+Welcome to Dyko documentation!
+******************************
+
+:Release: |version|
+:Date: |today|
+
+.. toctree::
+    :numbered:
+    
+    kalamar.rst
+    kraken.rst
+    koral.rst
+
