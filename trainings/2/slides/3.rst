@@ -1,0 +1,16 @@
+Run server 
+==========
+
+Now, run our application
+
+**runserver.py** ::
+
+  #!/usr/bin/python
+  import kraken
+
+  application = kraken.Site(site_root='.', kalamar_conf='./wiki.conf')
+  kraken.runserver(application)
+
+  
+
+

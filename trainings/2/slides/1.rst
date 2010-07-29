@@ -1,0 +1,24 @@
+Data Model
+==========
+
+This tutorial guide how to create a simple application using Dyko framework. 
+What informations that we need in a simple wiki: an index linking to another
+pages. So that instead of creating a complexe datamodel, we need simply a 
+directory which content all our wiki page. 
+
+Now, create a simple file configugation 
+
+*wiki_page* is an access point for all wiki pages who use parser "rest" for 
+recover informations. 
+
+**wiki.conf** ::
+
+  [wiki_page]
+  url: file://./wiki
+  filename_format: *.rst
+  storage_aliases: page=path1
+  parser: rest
+
+  
+
+
