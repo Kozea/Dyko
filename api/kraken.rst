@@ -1,18 +1,10 @@
-Kraken
-******
-
 .. automodule:: kraken
 
-.. automodule:: kraken.cached_kalamar
+   .. automodule:: kraken.site
+      :members:
 
-.. autoclass:: kraken.cached_kalamar.CachedKalamarSite
-    :members:
-    
-.. automodule:: kraken.site
+   .. automodule:: kraken.cached_kalamar
+      :members:
 
-.. autoclass:: kraken.site.Site
-    :members:
-
-.. automodule:: kraken.utils
-    :members:
-    
+   .. automodule:: kraken.utils
+      :members:
