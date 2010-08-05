@@ -1,16 +1,33 @@
-View 
-====
+Data Model
+==========
 
-Create a view for showing our wiki page. We open our access point *wiki_page* by
-giving its name (by default: *wiki*)
+All we need in a wiki is creating and modifing wiki pages. So that instead of 
+creating a complexe datamodel, you need simply a directory which content all our 
+wiki pages. Dyko give you a very simple way to work with files system.
 
-**wiki.html.jinjia2** ::
+Create a simple configugation
+----------------------------- 
 
-  {% set page_content = request.kalamar.open('wiki_page', 
-                                          request.args.page or 'wiki') %}
+*wiki_page* is an access point for all wiki pages who use parser "rest" for 
+recover informations. 
 
-  {{ page_content.text }}
+**wiki.conf** ::
 
-  
+  [wiki_page]
+  url: file://./content/wikipage
+  filename_format: *.rst
+  storage_aliases: page=path1
+  parser: rest
+
+Modify runserver script
+-----------------------
+
+Add your configuration for kraken site. ::
+
+  #!/usr/bin/python
+  import kraken
+  kraken.runserver(kraken.Site(site_root='.', 
+                               kalamar_conf='./wiki.conf',
+                               secret_key='mYwIkI')) 
 
 

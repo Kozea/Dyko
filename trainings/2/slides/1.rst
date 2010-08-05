@@ -1,24 +1,36 @@
-Data Model
+First step 
 ==========
 
-This tutorial guide how to create a simple application using Dyko framework. 
-What informations that we need in a simple wiki: an index linking to another
-pages. So that instead of creating a complexe datamodel, we need simply a 
-directory which content all our wiki page. 
+Prerequisites
+-------------
+Before starting this tutorial, you need to check that your computer has Dyko 
+framework installed correctly (see download_)
 
-Now, create a simple file configugation 
+Initializing the Project
+------------------------
 
-*wiki_page* is an access point for all wiki pages who use parser "rest" for 
-recover informations. 
-
-**wiki.conf** ::
-
-  [wiki_page]
-  url: file://./wiki
-  filename_format: *.rst
-  storage_aliases: page=path1
-  parser: rest
-
+Create a project directory::
   
+  $ mkdir -p ~/dyko/mywiki 
+  $ cd ~/dyko/mywiki
 
+Create *runserver.py* script::
 
+  #!/usr/bin/python
+  import kraken
+  kraken.runserver(kraken.Site(site_root='.'))
+
+Create a simple page *index.html.jinja2* in your directory::
+
+  Hello the world !
+
+Run your application::
+
+  $ python runserver.py
+  * Running on http://localhost:5000/
+  
+All you need now is opening a browser and typing *http://localhost:5000/*. You 
+should to see you *Hello the world !*. Go to next step to see how to create a 
+wiki with Dyko.
+
+.. _download: /download

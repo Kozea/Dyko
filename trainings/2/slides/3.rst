@@ -1,16 +1,25 @@
-Run server 
-==========
+The view
+========
 
-Now, run our application
+Replace the *index.html.jinja2* page with the following code (using jinja2 
+template)::
 
-**runserver.py** ::
+  {% set page_content = request.kalamar.open('wiki_page', 
+                                             [request.args.page or 'wiki')] %}
+  {{ page_content.text }}
 
-  #!/usr/bin/python
-  import kraken
+Add some contents manually for test our first view, we will see how to create 
+and modify wiki page in these next steps.
 
-  application = kraken.Site(site_root='.', kalamar_conf='./wiki.conf')
-  kraken.runserver(application)
+Create content directory ::
 
+  $ mkdir -p content/wikipage
+
+Then, add file *wiki.rst* ::
+
+  Wiki home page  
+  ==============
   
-
-
+  Hello Dyko !
+  
+Open your browser and go to *http://localhost:5000/*

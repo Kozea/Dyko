@@ -1,0 +1,109 @@
+Controller
+==========
+
+In this step, we introduce how to use controller for editing page.
+
+Modify view *index.html.jinja2*
+------------------------------- 
+We will add some action for editing, renaming and deleting a page which will be
+handled by controller *wiki_edit.py* bellow.
+
+**index.html.jinja2** ::
+
+  {% set page_content = request.kalamar.open('wiki', 
+                                              [request.args.page or 'wiki']) %}
+  {% if request.args.action == "edit" %}
+  <article>
+    <h2>Edit Article</h2>
+    <form action="/wiki_edit/" method="post"> 
+      <textarea name="text">{{ page_content.text }}</textarea>
+      <input type="hidden" name="page" value="{{ request.args.page or 'wiki' }}" />
+      <input type="hidden" name="method" value="modify" />
+      <input type="submit" value="Save" />
+    </form>
+  </article>
+  {% elif request.args.action == "rename" %}
+  <article>
+    <h2>Rename Article</h2>
+    <form action="/wiki_edit/" method="post"> 
+      <input type="hidden" name="old_page" value="{{ request.args.page or 'wiki' }}" />
+      <input type="hidden" name="method" value="rename" />
+      <label for="new_page">Nouveau nom</label>
+      <input id="new_page" name="new_page" type="text" value="{{ request.args.page }}" />
+      <input type="submit" value="Rename" />
+    </form>
+  </article>
+  {% else %}
+  <ul>
+    <li>
+      <a href="/?action=edit&page={{ request.args.page or 'wiki' }}">Edit</a>
+    </li>
+  {% if page_content.path1 != "wiki" %}
+    <li>
+      <a href="/?action=rename&page={{ request.args.page }}">Rename</a>
+    </li>
+    <li>
+      <a href="/wiki_edit/?action=delete&page={{ request.args.page }}">Delete</a>
+    </li>
+  {% endif %}
+  </ul>
+
+  {{ import_("utils").rest_to_article(page_content) }}
+
+  {% endif %}
+
+
+Add controller *wiki_edit.py*
+-----------------------------
+
+By default, when Kraken site take an request, it verify if request match any 
+page such as *\*.html.jinja2*, then continue verifing if match any *\*.py*. 
+
+In *wiki_edit.py* controller, we create function **handle_request** for all 
+editing demands. ::
+
+  import docutils.core
+  import docutils.writers.html4css1
+  import os
+  from xml.etree import ElementTree
+
+  from kraken.utils import redirect, Response
+  from . import kalamar
+
+  def handle_request(request):
+      method = request.form.get('method', u'')
+      if method == 'modify':
+          return save(request)
+      elif method == 'rename':
+        return rename(request)
+      elif request.args['action'] == 'delete':
+        return delete(request)
+        
+  def save(request):
+      """Save content page"""
+      page = request.form.get('page', u'wiki')
+      page_item = kalamar.open('wiki', [page])
+      page_item['text'] = request.form.get('text', u'')
+      kalamar.save(page_item)
+      return redirect(request, '/?page=%s' % (page))
+
+  def rename(request):
+      old_page = request.form.get('old_page', u'')
+      new_page = request.values.get('new_page').strip()
+
+      if kalamar.search('wiki', [new_page]):
+          # TODO: fix that
+          return redirect(request, '/?page=%s' % old_page)
+      else:
+          page_item = kalamar.open('wiki', [old_page])
+          page_item['page'] = new_page
+          kalamar.save(page_item)
+          return redirect(request, '/?page=%s' % new_page)
+
+  def delete(request):
+      filename = request.args['page']
+      if os.path.isfile('content/wiki/%s.rst' % filename):
+          os.remove('content/wiki/%s.rst' % filename)
+      return redirect(request, '/')
+      
+Refresh your browser for editing your content home page !

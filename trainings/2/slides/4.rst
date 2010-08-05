@@ -1,0 +1,32 @@
+Better with an layout
+=====================
+
+Create a helper *utils.py* 
+--------------------------
+In directory of project, add an function which convert our reSt file contents to 
+html::
+
+  import docutils.core
+  import docutils.writers.html4css1
+  from xml.etree import ElementTree
+
+  def rest_to_article(item, level=3):
+      """Convert ``item`` to HTML article."""
+      parts = docutils.core.publish_parts(
+          source=item["text"],
+          writer=docutils.writers.html4css1.Writer(),
+          settings_overrides={"initial_header_level": level})
+
+      return parts['fragment'].strip()
+      
+Replace the *index.html.jinja2* ::
+
+  {{ page_content.text }}
+  
+by::
+
+  {{ import_("utils").rest_to_article(page_content) }}
+  
+Refresh your page, you should have an true wiki content ! What else ? We will 
+see together in next step how to create controllers for creating and editing 
+pages.
