@@ -1,0 +1,40 @@
+What is a parser ?
+==================
+
+Objective of parser is to analyze the information of a kalamar item. In our case,
+a mail parser have to find out the data informations given by ldap storage in 
+order to extract the useful properties  to user ("From", "To", and 
+attached files, etc.) 
+
+mailitem.py ::
+
+  from kalamar.item import Item
+  import email
+
+  class MailItem(Item):
+      """Parse email messages using python builtin email module."""
+      format = 'mail_'
+      
+      def _parse_data(self):
+          """Parse email headers as properties."""
+          properties = super(MailItem, self)._parse_data()
+          msg = email.message_from_string(self._get_content())
+
+          for key, value in msg.items():
+              properties[key] = value
+
+          properties['attachments'] = []
+          for part in msg.walk():
+              if part.get_content_type() == 'text/plain':
+                  properties['body_plain_text'] = part.get_payload()
+              elif  part.get_content_type() == 'text/html':
+                  properties['body_html_text'] = part.get_payload()        
+              elif part.get_filename():
+                  properties['attachments'].append((part.get_filename(),
+                                                    part.get_payload(decode=True)))
+          properties['message'] = msg
+          return properties
+          
+      def serialize(self):
+          """Return mail message."""
+          return self.raw_parser_properties['message'].as_string()

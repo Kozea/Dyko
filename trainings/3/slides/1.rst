@@ -1,0 +1,65 @@
+What is a storage ?
+===================
+
+A storage define method that kalamar use to find out the information. In this step, 
+we will explain you how to write a storage for fetching mail from server IMAP.
+
+Firstly, we define the *url* properties for our lmap protocol, something like ::
+
+  lmap://server_imap_name
+  
+Next step, we have to implement **_storage_search** method for searching mail 
+following conditions such as *user*, *password*, *mail box*, etc. This method 
+returns a list of properties of mail items with a function *opener* correspodent. 
+This function give the way to get the content of mail which is useful for 
+parsing informations of **parser**.
+
+Finally, we tell to kalamar which is the primary keys among the properties of 
+mail item. In this case, we have *mail id* of *user*.
+ 
+**imapmail.py** ::
+
+  import imaplib
+
+  from kalamar.storage.base import AccessPoint
+
+  class ImapStorage(AccessPoint):
+      protocol = 'imap'
+
+      def __init__(self, **config):
+          super(ImapStorage, self).__init__(**config)
+          _, _, self.imapserver = config['url'].split('/')
+          
+      def _storage_search(self, conditions):
+          """ Return mails following ``conditions``
+          """
+          user = ''
+          password = ''
+          mail_box = 'INBOX'
+          conditions = list(conditions)
+          # Simple implementation of search condition
+          for condition in conditions:
+              if condition.property_name == 'user':
+                  user = condition.value
+              elif condition.property_name == 'password':
+                  password = condition.value
+              elif condition.property_name == 'mail_box':
+                  mail_box = condition.value
+          # Fetch mail        
+          mail = imaplib.IMAP4_SSL(self.imapserver)
+          mail.login(user, password)
+          mail.select(mail_box)
+          resp, emailids = mail.search('utf-8', 'ALL')
+          for emailid in emailids[0].split():
+              rsp, data = mail.fetch(emailid, '(RFC822)')
+              yield ({'id': emailid, 'user': user, 'mail_box': mail_box}, 
+                      lambda: data[0][1])
+          mail.logout()
+           
+      def get_storage_properties(self):
+          return ['id', 'user', 'password', 'mail_box']
+      
+      @property
+      def primary_keys(self):
+          return ['id', 'user']
+
