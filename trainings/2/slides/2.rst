@@ -1,0 +1,16 @@
+View 
+====
+
+Create a view for showing our wiki page. We open our access point *wiki_page* by
+giving its name (by default: *wiki*)
+
+**wiki.html.jinjia2** ::
+
+  {% set page_content = request.kalamar.open('wiki_page', 
+                                          request.args.page or 'wiki') %}
+
+  {{ page_content.text }}
+
+  
+
+
