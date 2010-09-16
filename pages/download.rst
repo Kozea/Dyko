@@ -3,16 +3,16 @@ Install Dyko
 =============
 
 
-Part 1: Download Dyko
-======================
+Download Dyko
+==============
 
-Open a Terminal, then clone dyko repository. In order to get source's files of dyko::
+Open a Terminal, then clone dyko repository. In order to get source's files of dyko ::
 
   git clone git ://kozea.fr/dyko
 
 
-Part 2: Install Dyko
-=====================
+Install Dyko
+=============
 
 Move on this folder and then put this instruction::
 

@@ -5,8 +5,8 @@
 */
 
 @font-face {
-  font-family: Boardwalk;
-  src: url('BOARDWAL.TTF');
+  font-family: "foo";
+  src: url('foo.ttf');
 }
 
 /* 
@@ -17,13 +17,16 @@
 	 
 html {
   background-color: #202020;
-  font-family: Boardwalk;
+  font-family: "foo";
 }
 
 body {
-  background: url(img/background-dyko.png) repeat-x top left;
+  background: url(img/background-dyko.png) repeat-x top left, 
+  			  url(img/bg-tentacule-bottom.png) no-repeat bottom right;
   border: none;
   border-radius: 0;
+  font-size: 0.9em;
+  opacity: 1;
   margin: 0; 
   padding: 0;
   text-align: left;
@@ -35,12 +38,32 @@ body {
   - Common - 
   ----------
 */
+a {
+  padding: 0;
+}
+
 a:hover, 
 a:focus {
 	background: none;
 }
 
+h2 {
+	margin: 0;
+}
 
+h2, h3, h4, h5, h6 {
+  text-shadow: 0 0 0 transparent;
+}
+
+pre {
+  background: white;
+  border-left: solid 30px;
+  color: #4788be;
+  font-size: 0.9em;
+  margin: 1em 8%;
+  padding-left: 20px;
+  text-shadow: 0 0 0 transparent;
+}
 
 /*
   ----------
@@ -91,7 +114,7 @@ h1:before {
 h1:after {
   content: url(img/h1-after.png);
   float: right;
-  margin: -204px -66px 0 0;
+  margin: -207px -66px 0 0;
 }
 
 
@@ -103,6 +126,7 @@ h1:after {
 nav {
   display: inline-block;
   float: left;
+  margin: -10px 0 0 0;
   width: 30%;
 }
 
@@ -111,16 +135,18 @@ nav ul {
   box-shadow: 0 0 0 transparent;
   text-align: left;
   text-transform: none;
-  margin: 0 0 0 18%;
-
+  margin: 0 0 0 25%;
+  pdding: 0;
 }
 
 nav li {
   border-bottom: 1px solid #363636;
   border-top: 1px solid #101010;
+  color: #76b4e8;
   display: block;
-  font-size: 1.7em;
-  padding: 6px 0;
+  font-size: 3em;
+  text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.7);
+  padding: 0 0 0 5px;
 }
 
 nav li:first-child {
@@ -133,6 +159,9 @@ nav li:last-child {
 
 nav li a {
   color: #808080;
+  font-size: 70%;
+  padding: 0;
+  text-shadow: 0 0 0 transparent;
 }
 
 nav li a:hover, 
@@ -146,7 +175,7 @@ nav:after {
   content: url(img/tentacle-nav.png);
   height: 306px; 
   width: 326px;
-  margin: -10% 0 0 0;
+  margin: -18% 0 0 0;
 }
 
 
@@ -157,14 +186,60 @@ nav:after {
 */
 section {
   background-color: #f5f5f5;
-  display: inline-block; 
+  display: block; 
+  margin-left: 30%;
+  padding: 20px 0;
   vertical-align: top;
   width: 60%;
 }
 
 section:first-of-type {
   background: #f5f5f5 url(img/background-section.png) repeat-x top left;
-  margin-top: -53px;
+  margin-top: -51px;
+}
+
+
+/* - article - */
+article h2 {
+	color: #4788be;
+	font-size: 3em;
+	line-height: 1em;
+	box-reflect: below -7px -webkit-gradient(linear, 0% 0%, 0% 100%, from(transparent), 
+											 color-stop(0.5, transparent), 
+											 to(rgba(255, 255, 255, 0.6)));
+}
+
+section article section {
+  background-color: transparent;
+  background: url(img/separation.png) no-repeat bottom right;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  margin: 0 0 0 4%;
+  padding: 0 0 35px 0;
+  width: 96%;
+}
+
+section article section:first-of-type {
+  background: url(img/separation.png) no-repeat bottom right;
+  margin-top: 0;
+}
+
+.section h3 {
+  background-color: #e1e1e1;
+  border-radius: 8px;
+  display: inline-block;
+  font-weight: normal;
+  padding: 6px 35px 6px 20px;
+  border-top: 14px solid #000;
+}
+
+.section h3:before {
+	content: "Part ";
+	display: block;
+	font-size: 0.7em;
+	font-weight: bold;
+	color:#FFFFFF;
+	margin-top: -20px;
+	margin-left: -8px;
 }
 
 
@@ -174,11 +249,17 @@ section:first-of-type {
   ----------
 */
 footer {
+  background: #000000;
+  border-radius: 0 0 15px 15px;
   font: 0.9em Verdana, Arial, Helvetica, sans-serif;
+  display: inline-block;
+  line-height: 3.5em;
+  margin: 0 0 75px 0;
+  width: 60%;
 } 
 
-footer li {
-	
+footer ul {
+  margin: 0;
 }
 
 footer li a {
