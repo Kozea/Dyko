@@ -1,0 +1,199 @@
+/* 
+  -------------- 
+  - Import font -
+  ---------------
+*/
+
+@font-face {
+  font-family: Boardwalk;
+  src: url('BOARDWAL.TTF');
+}
+
+/* 
+  ---------------
+  - Html / body -
+  ---------------
+*/
+	 
+html {
+  background-color: #202020;
+  font-family: Boardwalk;
+}
+
+body {
+  background: url(img/background-dyko.png) repeat-x top left;
+  border: none;
+  border-radius: 0;
+  margin: 0; 
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+/*
+  ----------
+  - Common - 
+  ----------
+*/
+a:hover, 
+a:focus {
+	background: none;
+}
+
+
+
+/*
+  ----------
+  - Header - 
+  ----------
+*/
+
+header {
+  display: block;
+  min-height: 200px;
+  padding: 0 0 0 290px;
+  margin: 0 7%;
+}
+
+h1 {
+  background-color: #202020;
+  margin: 0 3% 0 0;
+  height: 80px;
+}
+
+h1 a {
+  border-radius: 0;
+  display: block;
+  height: 198px;
+  margin-top: -80px;
+  visibility: hidden;
+}
+
+h1 a:before {
+  content: url(img/logo-dyko.png);
+  position: absolute;
+  top: 5px; 
+  left: 7%;
+  visibility: visible;
+}
+
+h1 a:hover, 
+h1 a:focus {
+  background: none;
+  box-shadow: 0 0 0 transparent;
+}
+
+h1:before {
+  content:  url(img/h1-before.png);
+  margin: 0 0 0 -66px;
+}
+
+h1:after {
+  content: url(img/h1-after.png);
+  float: right;
+  margin: -204px -66px 0 0;
+}
+
+
+/*
+  --------------
+  - Navigation -
+  --------------
+*/
+nav {
+  display: inline-block;
+  float: left;
+  width: 30%;
+}
+
+nav ul {
+  background-color: transparent;
+  box-shadow: 0 0 0 transparent;
+  text-align: left;
+  text-transform: none;
+  margin: 0 0 0 18%;
+
+}
+
+nav li {
+  border-bottom: 1px solid #363636;
+  border-top: 1px solid #101010;
+  display: block;
+  font-size: 1.7em;
+  padding: 6px 0;
+}
+
+nav li:first-child {
+	border-top: none;
+}
+
+nav li:last-child {
+	border-bottom: none;
+}
+
+nav li a {
+  color: #808080;
+}
+
+nav li a:hover, 
+nav li a:focus {
+  background: transparent;
+  color: #76b4e8;
+}
+
+nav:after {
+  display: block;
+  content: url(img/tentacle-nav.png);
+  height: 306px; 
+  width: 326px;
+  margin: -10% 0 0 0;
+}
+
+
+/*
+  - ---------
+  - Section - 
+  -----------
+*/
+section {
+  background-color: #f5f5f5;
+  display: inline-block; 
+  vertical-align: top;
+  width: 60%;
+}
+
+section:first-of-type {
+  background: #f5f5f5 url(img/background-section.png) repeat-x top left;
+  margin-top: -53px;
+}
+
+
+/*
+  - --------
+  - Footer - 
+  ----------
+*/
+footer {
+  font: 0.9em Verdana, Arial, Helvetica, sans-serif;
+} 
+
+footer li {
+	
+}
+
+footer li a {
+  color: #4788be;
+  border-radius: 0;
+  text-transform: none;
+}
+
+footer li a:hover, 
+footer li a:focus {
+	background-color: transparent;
+	box-shadow: 0 0 0 transparent;
+	color: #4788be;
+}
+
+footer li:after {
+	content: " | ";
+}
