@@ -4,9 +4,9 @@ What is a storage ?
 A storage define method that kalamar use to find out the information. In this step, 
 we will explain you how to write a storage for fetching mail from server IMAP.
 
-Firstly, we define the *url* properties for our lmap protocol, something like ::
+Firstly, we define the *url* properties for our imap protocol, something like ::
 
-  lmap://server_imap_name
+  imap://server_imap_name
   
 Next step, we have to implement **_storage_search** method for searching mail 
 following conditions such as *user*, *password*, *mail box*, etc. This method 
