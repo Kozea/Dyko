@@ -18,29 +18,36 @@
 from kalamar.access_point.alchemy import Alchemy, AlchemyProperty
 from kalamar.site import Site
 from kalamar.item import Item
-from kalamarx.jsonreststore.tests.test_common import testedsite
+from .test_common import testedsite
 
 def tear_down(site):
-    for ap in site.access_points.values():
-        ap._table.drop()
+    """Teardown method for the site.
+
+    Drop every table
+    """
+    for access_point in site.access_points.values():
+        access_point._table.drop()
 
 
 @testedsite(tear_down)
 def test_alchemy():
+    """Test building the "standard test" kalamar site for alchemy"""
     url = "sqlite:///"
     remote_property = AlchemyProperty(Item, relation="many-to-one",
     remote_ap="foreign", remote_property="code", column_name="foreign")
-    access_point = Alchemy(url, "test_ap", {"id": AlchemyProperty(int,
-        column_name="id"), "name": AlchemyProperty(unicode, column_name="name"),
-        "color": AlchemyProperty(unicode, column_name="color"), "foreign": remote_property},
-            "id", True)
-    foreign_access_point = Alchemy(url, "foreign", {"code": AlchemyProperty(unicode,
-        column_name="code"), "name":
-        AlchemyProperty(unicode, column_name="name")},"code", True)
+    access_point = Alchemy(url, "test_ap", {
+        "id": AlchemyProperty(int, column_name="id"), 
+        "name": AlchemyProperty(unicode, column_name="name"),
+        "color": AlchemyProperty(unicode, column_name="color"), 
+        "foreign": remote_property},
+        "id", True)
+    foreign_access_point = Alchemy(url, "foreign", {
+        "code": AlchemyProperty(unicode, column_name="code"), 
+        "name": AlchemyProperty(unicode, column_name="name")},
+    "code", True)
     kalamar_site = Site()
     kalamar_site.register("test_ap", access_point)
     kalamar_site.register("foreign", foreign_access_point)
-
     return kalamar_site
 
 
@@ -56,4 +63,4 @@ def test_alchemy():
 
 
 
-    
+

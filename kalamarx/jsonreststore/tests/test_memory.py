@@ -19,12 +19,13 @@ from kalamar.access_point.memory import Memory
 from kalamar.property import Property
 from kalamar.site import Site
 from kalamar.item import Item
-from kalamarx.jsonreststore.tests.test_common import testedsite
+from .test_common import testedsite
 
 
 
 @testedsite(None)
 def test_memory():
+    """Constructs a kalamar site to be tested against the standard test suite"""
     remote_property = Property(Item, relation="many-to-one",
     remote_ap="foreign")
     access_point = Memory({"id": Property(int), "name": Property(unicode),

@@ -49,17 +49,21 @@ def p_distinct(p):
 
 #Define the condition parser
 def p_condition(p):
-    ''' condition : CONDITION_SYMBOL test 
+    ''' condition : SUBEXPRESSION_START CONDITION_SYMBOL test SUBEXPRESSION_END
                 '''
-    p[0] = query.QueryFilter(p[2])
+    p[0] = query.QueryFilter(p[3])
 
 def p_complex_condition(p):
-    ''' condition : SUBEXPRESSION_START condition SUBEXPRESSION_END '''
+    ''' test : SUBEXPRESSION_START test SUBEXPRESSION_END '''
     p[0] = p[2]
 
 def p_bin_expr_cond(p):
     '''test : test BIN_OPERATOR test '''
     p[0] = p[2](p[1], p[3])
+
+#def p_condition_simple(p):
+#    '''condition : test'''
+#    p[0] = p[1]
 
 def p_expression_cond(p):
     '''test : PROPERTY OPERATOR scalar '''
@@ -119,7 +123,7 @@ def p_range(p):
             MAPPING_DELIMITOR NUMBER SUBEXPRESSION_END '''
     p[0] = query.QueryRange(slice(p[2], p[4]))
 
-yacc.yacc()
+yacc.yacc(debug=True)
 
 def parse(query_string):
     """Parses a query string
@@ -135,10 +139,13 @@ def parse(query_string):
     >>> query = parse("[/a,\\\\b]")
     >>> list(query(items))
     [{'a': 4, 'b': 8}, {'a': 5, 'b': 8}, {'a': 5, 'b': 7}]
+    >>> query = parse("[? a=4 | [a=5 & b=8]]")
+    >>> list(query(items))
+    [{'a': 4, 'b': 8}, {'a': 5, 'b': 8}]
     >>> items = [{"a" : {'id': 1, 'label': 'test'}, "id" : 8}, {"a": {'id': 2}}]
     >>> query = parse("[?a.id=1][={label:a.label, id:id, truc:a.id}]")
     >>> list(query(items))
     [{'truc': 1, 'id': 8, 'label': 'test'}]
-    >>> items = [{"a" : {'id': 1, 'label': 'test'}, "id" : 8}, {"a": {'id': 2}}, {"b":  "truc"}]
     """
+
     return yacc.parse(query_string)

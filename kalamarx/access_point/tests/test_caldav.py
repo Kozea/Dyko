@@ -28,29 +28,34 @@ from multiprocessing import Process, Queue
 
 @nottest
 def make_radicale(tempdir):
-   radicale.ical.FOLDER = tempdir
-   server = radicale.HTTPServer(("127.0.0.1", 5232),
-           radicale.CalendarHTTPHandler)
-   server.serve_forever()
+    """Starts a radical server, using the given folder"""
+    radicale.ical.FOLDER = tempdir
+    server = radicale.HTTPServer(("127.0.0.1", 5232),
+        radicale.CalendarHTTPHandler)
+    server.serve_forever()
 
 APNAME = "mycalendar"
 
 
 class TestRadicale(object):
+    """Class testing the CalDav access point"""
 
 
     def setUp(self):
+        """Sets the test up"""
         self.temp_dir = mkdtemp()
         self.start_radicale()
         self.site = self.make_site()
         
 
     def tearDown(self):
+        """Tears the test down"""
         self.stop_radicale()
         rmtree(self.temp_dir)
 
     @nottest
     def start_radicale(self):
+        """Start a radicale server in a separate process"""
         self.radicale_process = Process(target=make_radicale,
                 args=(self.temp_dir,))
         self.radicale_process.start()
@@ -58,17 +63,20 @@ class TestRadicale(object):
 
     @nottest 
     def stop_radicale(self):
+        """Stop the radicale server"""
         self.radicale_process.terminate()
         time.sleep(0.1)
 
 
     @nottest
     def make_ap(self):
+        """Creates the access point to be tested"""
         ap = CalDav('http://localhost:5232/radicale/', ["calendar"])
         return ap
 
     @nottest
     def make_site(self):
+        """Create the kalamar site to be tested"""
         site = Site()
         site.register(APNAME, self.make_ap())
         return site
@@ -76,6 +84,8 @@ class TestRadicale(object):
 
     @nottest
     def assert_simple_item(self):
+        """Utility method asserting that the calendar contains one and only one
+        event"""
         items = list(self.site.search(APNAME,{}))
         eq_(len(items), 1)
         item = items[0]
@@ -84,6 +94,7 @@ class TestRadicale(object):
 
     @nottest
     def create_simple_item(self):
+        """Utility method creating a simple item"""
         item = self.site.create(APNAME,{'dtstart' : datetime(2010, 9, 10, 12,
             00),
                             'dtend' : datetime(2010, 9, 10, 12, 00),
@@ -92,17 +103,20 @@ class TestRadicale(object):
                             'uid' : None,
                             'calendar' : 'calendar',
                             'summary' : u'Kalamar supports caldav!',
-                            'location' : u'Dans ton slip'})
+                            'location' : u'Kozea Corp.'})
         item.save()
         return item
 
 
     def test_add_event(self):
+        """Simple test asserting that an item can be created and properly
+        saved"""
         self.create_simple_item()
         item = self.assert_simple_item()
         eq_(item['summary'], u'Kalamar supports caldav!')
 
     def test_remove_event(self):
+        """Simple test asserting that an item can be properly deleted."""
         self.create_simple_item()
         item = self.assert_simple_item()
         item.delete()
@@ -110,18 +124,13 @@ class TestRadicale(object):
         eq_(len(items), 0)
 
     def test_update_event(self):
+        """Simple test asserting that an item can be properly updated."""
         self.create_simple_item()
         item = self.assert_simple_item()
         item['summary'] = u'I AM UPDATED!'
         item.save()
         item = self.assert_simple_item()
         eq_(item['summary'], u'I AM UPDATED!')
-
-    @nottest    
-    def reinit(self):
-        self.stop_radicale()
-        self.start_radicale()
-        self.site = self.make_site()
 
 
 

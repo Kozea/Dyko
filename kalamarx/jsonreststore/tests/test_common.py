@@ -28,35 +28,50 @@ from functools import update_wrapper
 
 
 @nottest
-def commontest(f):
+def commontest(test_function):
     '''
-    Decorator to explicit a test which must run for all access points. All the
+    Decorator to explicit a test which must run for all access sites. All the
     tests are saved in commontest.tests.
     '''
-    f = nottest(f)
-    commontest.tests.append(f)
-    return f
+    test_function = nottest(test_function)
+    commontest.tests.append(test_function)
+    return test_function
 
 commontest.tests = []
 
 class testedsite(object):
     '''
-    Decorator over a function that return an instance of access point.
+    Decorator over a function that return an instance of site.
+
+    The site must provide the following access_point:
+        - test_ap : 
+            * id: int (identity property)
+            * color: unicode
+            * name: unicode
+            * foreign: many-to-one towards "foreign"
+        - foreign : 
+            * code : unicode (identity property)
+            * name : unicode
 
     If that function meet the noses requirements to be tested, this
-    access_point instance will be tested over all common tests.
+    site instance will be tested over all common tests.
     '''
 
     def __init__(self, teardown = None):
+        """Teardown is a function accepting a kalamar site and tearing the test
+        down"""
         self.teardown = nottest(teardown) if teardown is not None else None
 
     def __call__(self, make_site):
     
         def _run_test(site):
+            """Returns a function executing the test given as argument
+            against the site"""
             return lambda test : test(make_client(site))
 
             
         def test_run():
+            """Run all tests"""
             for test in commontest.tests:
                 site = make_site()
                 runtest = _run_test(site)
@@ -69,6 +84,7 @@ class testedsite(object):
         return test_run
 
 def make_client(kalamar_site):
+    """Utility function creating a werkzeug client on a rest api"""
     application = JSONRest(kalamar_site)
     foreign_item1 = kalamar_site.create("foreign", {"code" : "AAA", "name":
     "Foreign AAA"})
@@ -97,20 +113,20 @@ def make_client(kalamar_site):
 
 
 def make_query(client, url, prefix="/test_ap/"):
+    """Utility function allowing to jsonquery the rest api"""
     url = prefix + quote(url, safe="")
     resp = client.get(url)
     return json.loads(resp.data)
 
 @commontest
 def test_get_all(client):
+    """Asserts that the get_all url is good"""
     items = make_query(client, "")
     eq_(len(items), 5)
-    items = make_query(client, "[={id:id, label:name}]")
-    eq_(len(items), 5)
-    assert all(['id' in a and 'label' in a for a in items])
 
 @commontest
 def test_get_all_order(client):
+    """Assert that an order clause is working"""
     items = make_query(client, "[/color, \\name]")
     eq_(len(items), 5)
     #Assert that its sorted
@@ -121,18 +137,24 @@ def test_get_all_order(client):
 
 @commontest
 def test_get_all_mapping(client):
+    """Assert that mapping are working"""
     items = make_query(client, "[={foreign_name: foreign.name}]")
     eq_(len(items), 5)
     assert(all([a['foreign_name'] in [None, 'Foreign AAA', 'Foreign BBB']
             for a in items]))
+    items = make_query(client, "[={id:id, label:name}]")
+    eq_(len(items), 5)
+    assert all(['id' in a and 'label' in a for a in items])
 
 @commontest
 def test_get_all_distinct(client):
+    """Assert that a distinct is working"""
     items = make_query(client, "[={color: color}].distinct()")
     eq_(len(items), 3)
 
 @commontest
 def test_get_all_range(client):
+    """Assert that range is working"""
     items = make_query(client, "[1:2]")
     eq_(len(items), 1)
     items = make_query(client, "[={color: color}].distinct()[/color][1:2]")
@@ -140,18 +162,37 @@ def test_get_all_range(client):
     eq_(items[0]['color'], 'green')
 
 @commontest
+def test_get_all_filter(client):
+    """Assert that various filters are working"""
+    items = make_query(client, "[?id>3]")
+    eq_(len(items), 2)
+    items = make_query(client, '[?color!="blue"]')
+    eq_(len(items), 3)
+    items = make_query(client, '[?foreign.code = "BBB"]')
+    eq_(len(items), 2)
+    items = make_query(client, '[?color!="blue" & foreign.code="BBB"]')
+    eq_(len(items), 1)
+    items = make_query(client, '[?color!="blue" | foreign.code="BBB"]')
+    eq_(len(items), 4)
+    items = make_query(client, '[?id>3 & [color!="blue" | foreign.code="BBB"]]')
+    eq_(len(items), 2)
+
+
+@commontest
 def test_get_item(client):
+    """Test that a simple "getItem" is working"""
     items = make_query(client, "3")
     eq_(len(items), 1)
 
 
 @commontest
 def test_create_item(client):
+    """Assert that an item can be created from the rest API"""
     foreign_item = make_query(client, 'BBB', "/foreign/") 
     item = {"id" : 10, "name": "Test create", "color": "orangered",
             "foreign" : {"$ref" : "/foreign/BBB"}}
     item = json.dumps(item)
-    resp = client.post("/test_ap/", data = item)
+    client.post("/test_ap/", data = item)
     items = make_query(client, "10")
     eq_(len(items), 1)
     foreign_ref = items[0]["foreign"]["$ref"]
@@ -161,6 +202,7 @@ def test_create_item(client):
 
 @commontest
 def test_update_item(client):
+    """Assert that an item can be updated from the rest API"""
     foreign_item = make_query(client, '1')[0]
     foreign_item["name"] = "I'm updated"
     client.put("/test_ap/1", data = json.dumps(foreign_item))
@@ -173,11 +215,13 @@ def test_update_item(client):
 
 @commontest
 def test_delete_item(client):
+    """Assert that an item can be deleted from the rest API"""
     items = make_query(client, '')
     eq_(len(items), 5)
     assert 3 in [item['id'] for item in items]
-    resp = client.delete("/test_ap/3")
+    client.delete("/test_ap/3")
     items = make_query(client, '')
     eq_(len(items), 4)
     assert 3 not in [item['id'] for item in items]
+
 
