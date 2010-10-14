@@ -172,7 +172,6 @@ class JSONRest:
         """Deletes an item
         
         """
-        print "DELETE: %r " % item
         item.delete()
         return JSONResponse([])
 
@@ -180,7 +179,6 @@ class JSONRest:
         """Performs a "view" request on an access point
 
         """
-        print query
         return JSONResponse(list(self.kalamar.view(access_point, query=query)))
 
     def create_item(self, access_point, data):

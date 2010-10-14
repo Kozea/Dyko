@@ -177,7 +177,6 @@ def test_delete_item(client):
     eq_(len(items), 5)
     assert 3 in [item['id'] for item in items]
     resp = client.delete("/test_ap/3")
-    print resp
     items = make_query(client, '')
     eq_(len(items), 4)
     assert 3 not in [item['id'] for item in items]
