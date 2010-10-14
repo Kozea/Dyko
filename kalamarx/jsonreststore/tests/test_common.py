@@ -23,7 +23,7 @@ from urllib import quote
 import json
 
 from kalamarx.jsonreststore.store import JSONRest
-from functools import update_wrapper, partial
+from functools import update_wrapper
 
 
 

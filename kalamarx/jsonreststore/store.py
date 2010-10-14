@@ -42,12 +42,14 @@ from kalamarx.jsonreststore.requestconverter import KalamarRequestConverter
 
 
 class KalamarJSONDecoder(json.JSONDecoder):
+    """Custom JSONDecoder wich automatically fetches the references."""
 
     def __init__(self, restapi=None, **kwArgs):
         self.restapi = restapi 
         super(KalamarJSONDecoder, self).__init__(object_hook = self._decoder)
 
     def _decoder(self, value):
+        """Decoder given to the standard JSONDecoder"""
         if hasattr(value, "__iter__") and "$ref" in value:
             ref = value["$ref"]
             if ref.startswith("/"):
@@ -130,10 +132,8 @@ class JSONRest:
             endpoint, kwargs = url_map.match()
             if request.data: 
                 kwargs['data'] = self.fromjson(request.data)
-            if 'access_point' in kwargs:
-                access_point = kwargs['access_point']
             if 'ref' in kwargs:
-               kwargs['item'] = self.ref_to_item(kwargs.pop('ref')) 
+                kwargs['item'] = self.ref_to_item(kwargs.pop('ref')) 
             handler = getattr(self, endpoint)
             response = handler(**kwargs)
             return response(environ, start_response) 
@@ -198,7 +198,8 @@ class JSONRest:
     def ref_to_item(self, ref):
         identity = ref.split("/")
         access_point = identity[0]
-        id_properties = self.kalamar.access_points[access_point].identity_properties
+        id_properties = self.kalamar.access_points[access_point].\
+                identity_properties
         request = dict(zip(id_properties, identity[1:]))
         return self.kalamar.open(access_point,
                 request)
