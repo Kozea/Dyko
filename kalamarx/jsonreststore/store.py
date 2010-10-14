@@ -33,7 +33,7 @@ except ImportError:
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import NotFound
-from kalamar.item import Item
+from kalamar.item import AbstractItem 
 from kalamar.query import QueryChain
 from decimal import Decimal
 from datetime import date
@@ -83,7 +83,7 @@ class KalamarJSONEncoder(json.JSONEncoder):
             jsonvalue = str(obj)
         elif isinstance(obj, date):
             jsonvalue = {"_type":"Date", "_value":obj.isoformat()} 
-        elif isinstance(obj, Item):
+        elif isinstance(obj, AbstractItem):
             ap_name = obj.access_point.name
             ap_properties = obj.access_point.identity_properties
             jsonvalue = {"$ref": "%s/%s" % (ap_name, "/".join([str(obj[prop])
