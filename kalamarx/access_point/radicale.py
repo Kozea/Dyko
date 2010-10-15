@@ -23,7 +23,7 @@ CalDavServer
 from kalamar.item import Item 
 from caldav import DAVClient, Calendar, Event
 from datetime import datetime
-from kalamar.access_point.base import AccessPoint 
+from kalamar.access_point import AccessPoint 
 from kalamar.property import Property
 
 
