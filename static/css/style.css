@@ -16,12 +16,13 @@
 */
 
 html {
+  background: url(img/background-dyko.png) repeat-x top left,
+              url(img/bg-tentacule-bottom.png) no-repeat bottom right;
   background-color: #202020;
+  padding: 0 2em 3em 235px;
 }
 
 body {
-  background: url(img/background-dyko.png) repeat-x top left,
-              url(img/bg-tentacule-bottom.png) no-repeat bottom right;
   border: none;
   border-radius: 0;
   font-family: sans-serif;
@@ -31,6 +32,7 @@ body {
   padding: 0;
   text-align: left;
   width: 100%;
+  border-radius: 0 0 20px 20px;
 }
 
 /*
@@ -62,6 +64,7 @@ pre {
   color: #4788be;
   font-size: 0.9em;
   margin: 1em 8%;
+  overflow: hidden;
   padding-left: 20px;
   text-shadow: 0 0 0 transparent;
 }
@@ -73,23 +76,21 @@ pre {
 */
 
 header {
+  background: url(img/background-dyko.png) repeat-x top left;
   display: block;
+  margin-bottom: -51px;
   min-height: 200px;
   padding: 0 0 0 290px;
-  margin: 0 7%;
 }
 
 h1 {
   background-color: #202020;
-  margin: 0 3% 0 0;
+  margin: 0 35px 0 -250px;
   height: 80px;
 }
 
 h1 a {
   border-radius: 0;
-  display: block;
-  height: 198px;
-  margin-top: -80px;
   visibility: hidden;
 }
 
@@ -97,7 +98,7 @@ h1 a:before {
   content: url(img/logo-dyko.png);
   position: absolute;
   top: 5px;
-  left: 7%;
+  left: 0;
   visibility: visible;
 }
 
@@ -108,14 +109,16 @@ h1 a:focus {
 }
 
 h1:before {
-  content:  url(img/h1-before.png);
-  margin: 0 0 0 -66px;
+  content: url(img/h1-before.png);
+  margin: 0 0 0 -60px;
 }
 
 h1:after {
   content: url(img/h1-after.png);
-  float: right;
-  margin: -207px -66px 0 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 
@@ -125,20 +128,22 @@ h1:after {
   --------------
 */
 nav {
-  display: inline-block;
+  background: url(img/tentacle-nav.png) no-repeat bottom left;
+  display: block;
   float: left;
   font-family: "foo";
-  margin: -10px 0 0 0;
-  width: 30%;
+  margin: 3em 0 0 -250px;
+  padding: 50px 0 200px 0;
+  width: 250px;
 }
 
 nav ul {
   background-color: transparent;
   box-shadow: 0 0 0 transparent;
+  margin: 0;
+  padding: 0;
   text-align: left;
   text-transform: none;
-  margin: 0 0 0 25%;
-  pdding: 0;
 }
 
 nav li {
@@ -147,8 +152,10 @@ nav li {
   color: #76b4e8;
   display: block;
   font-size: 3em;
+  line-height: 1.4em;
+  margin: 0 -0.5em 0 0.5em;
+  padding: 0 0.5em;
   text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.7);
-  padding: 0 0 0 5px;
 }
 
 nav li:first-child {
@@ -161,6 +168,7 @@ nav li:last-child {
 
 nav li a {
   color: #808080;
+  display: block;
   font-size: 70%;
   padding: 0;
   text-shadow: 0 0 0 transparent;
@@ -172,32 +180,23 @@ nav li a:focus {
   color: #76b4e8;
 }
 
-nav:after {
-  display: block;
-  content: url(img/tentacle-nav.png);
-  height: 306px;
-  width: 326px;
-  margin: -18% 0 0 0;
-}
-
 
 /*
   - ---------
   - Section - 
   -----------
 */
+
 section {
-  background-color: #f5f5f5;
   display: block;
-  margin-left: 30%;
-  padding: 20px 0;
-  vertical-align: top;
-  width: 60%;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
-section:first-of-type {
+body > section {
   background: #f5f5f5 url(img/background-section.png) repeat-x top left;
-  margin-top: -51px;
+  padding: 2em;
 }
 
 
@@ -213,36 +212,38 @@ article h2 {
 }
 
 section article section {
-  background-color: transparent;
-  background: url(img/separation.png) no-repeat bottom right;
-  margin: 0 0 0 4%;
-  padding: 0 0 35px 0;
-  width: 96%;
+  background: none;
+  padding: 0 0 1.5em 0;
 }
 
-section article section:first-of-type {
-  background: url(img/separation.png) no-repeat bottom right;
-  margin-top: 0;
+section article section:after {
+  background: url(img/separation.png) no-repeat top right;
+  content: "";
+  display: block;
+  height: 40px;
+  margin: 0 -2em -40px -2px;
 }
 
-.section h3 {
+section h3 {
   background-color: #e1e1e1;
-  border-radius: 8px;
+  border-top: 1.2em solid black;
+  border-radius: 0.5em;
   display: inline-block;
   font-weight: normal;
-  padding: 6px 35px 6px 20px;
-  border-top: 14px solid #000;
+  padding: 0.5em 1em;
 }
 
-.section h3:before {
+section h3:before {
+  border-radius: 0.71em 0.71em 0 0;
   counter-increment: part;
   content: "Part " counter(part);
+  color: white;
   display: block;
-  font-size: 0.7em;
   font-weight: bold;
-  color:#FFFFFF;
-  margin-top: -20px;
-  margin-left: -8px;
+  margin: -1.65em 0 0.5em -0.5em;
+  padding: 0;
+  white-space: nowrap;
+  width: 100%;
 }
 
 
@@ -251,33 +252,116 @@ section article section:first-of-type {
   - Footer - 
   ----------
 */
+
 footer {
   background: #000000;
   border-radius: 0 0 15px 15px;
-  font: 0.9em;
-  display: inline-block;
+  font-size: 0.9em;
+  display: block;
   line-height: 3.5em;
-  margin: 0 0 75px 0;
-  width: 60%;
+  text-align: center;
 } 
 
 footer ul {
+  display: inline-block;
+  line-height: 1.2em;
   margin: 0;
+  padding: 0;
+}
+
+footer ul li {
+  margin: 0;
+  padding: 0;
 }
 
 footer li a {
   color: #4788be;
-  border-radius: 0;
   text-transform: none;
 }
 
 footer li a:hover,
 footer li a:focus {
-  background-color: transparent;
-  box-shadow: 0 0 0 transparent;
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
   color: #4788be;
 }
 
 footer li:after {
-  content: " | ";
+  content: " ●";
+  margin: 0 0.25em;
+}
+
+footer li:last-child:after {
+  content: "";
+}
+
+@media
+handheld and (max-width: 480px),
+screen and (max-device-width: 480px),
+screen and (max-width: 600px) {
+
+html {
+  background: #202020;
+  padding: 0 0 0 140px;
+}
+
+body {
+  background: #202020;
+}
+
+header {
+  background: #202020;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+h1:before,
+h1:after {
+  display: none;
+}
+
+h1 {
+  height: 0;
+  width: 0;
+}
+
+h1 a:before {
+  color: white;
+  content: "DYKO";
+  font: 2em "foo";
+  left: 0.1em;
+  line-height: 1em;
+  position: fixed;
+  z-index: 1;
+}
+
+nav {
+  font-size: 0.7em;
+  margin: 0 0 -20px -140px;
+  padding: 5em 0 100px 0;
+  position: fixed;
+  width: 140px;
+}
+
+nav li {
+  margin: 0 -0.25em;
+}
+
+body > section {
+  margin-top: 0;
+  padding: 1em;
+}
+
+section article section:after {
+  display: none;
+}
+
+footer {
+  background: transparent;
+  line-height: 1.2em;
+  margin: 0 0 0 -140px;
+}
+
 }
