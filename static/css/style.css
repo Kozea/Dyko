@@ -1,7 +1,7 @@
 /*
-  ---------------
-  - Import font -
-  ---------------
+  -------------
+  - Font Face -
+  -------------
 */
 
 @font-face {
@@ -11,7 +11,7 @@
 
 /*
   ---------------
-  - Html / body -
+  - HTML / Body -
   ---------------
 */
 
@@ -35,11 +35,13 @@ body {
   border-radius: 0 0 20px 20px;
 }
 
+
 /*
   ----------
-  - Common - 
+  - Common -
   ----------
 */
+
 a {
   padding: 0;
 }
@@ -69,9 +71,10 @@ pre {
   text-shadow: 0 0 0 transparent;
 }
 
+
 /*
   ----------
-  - Header - 
+  - Header -
   ----------
 */
 
@@ -127,6 +130,7 @@ h1:after {
   - Navigation -
   --------------
 */
+
 nav {
   background: url(img/tentacle-nav.png) no-repeat bottom left;
   display: block;
@@ -182,8 +186,8 @@ nav li a:focus {
 
 
 /*
-  - ---------
-  - Section - 
+  -----------
+  - Section -
   -----------
 */
 
@@ -199,8 +203,6 @@ body > section {
   padding: 2em;
 }
 
-
-/* - article - */
 article h2 {
   color: #4788be;
   counter-reset: part;
@@ -248,8 +250,8 @@ section h3:before {
 
 
 /*
-  - --------
-  - Footer - 
+  ----------
+  - Footer -
   ----------
 */
 
@@ -294,6 +296,13 @@ footer li:after {
 footer li:last-child:after {
   content: "";
 }
+
+
+/*
+  ---------
+  - Media -
+  ---------
+*/
 
 @media
 handheld and (max-width: 480px),
