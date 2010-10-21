@@ -1,5 +1,5 @@
 project = 'Dyko'
-release = '0.1'
+release = '0.2'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest']
 html_favicon = '../static/css/img/icon.png'

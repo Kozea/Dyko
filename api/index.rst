@@ -9,4 +9,3 @@ Dyko Documentation
     
    kalamar.rst
    kraken.rst
-   koral.rst
