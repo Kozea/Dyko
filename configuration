@@ -3,7 +3,7 @@
   "menu": [
     {"name": "News", "link": "/news"},
     {"name": "Download", "link": "/download"},
-    {"name": "Documentation", "link": "/static/api/index.html"},
+    {"name": "Documentation", "link": "/documentation"},
     {"name": "Tutorial", "link": "/tutorial"}
   ]
 }
