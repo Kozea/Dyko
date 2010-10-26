@@ -7,10 +7,12 @@
    .. autofunction:: kraken.runserver
 
    .. automodule:: kraken.site
-      :members: Request, StaticFileResponse, TemplateResponse
+      :members: expose_template, Request, StaticFileResponse, TemplateResponse
 
       .. autoclass:: kraken.site.Site
-         :members: __call__, import_, register_engine, render_template
+         :members: __call__, import_, prehandle, register_controllers,
+             register_engine, register_endpoint, render_template,
+             simple_template
 
    .. automodule:: kraken.template
 
