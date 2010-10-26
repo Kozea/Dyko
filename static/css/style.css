@@ -207,9 +207,9 @@ article h2 {
   counter-reset: part;
   font-size: 3em;
   line-height: 1em;
-  box-reflect: below -7px -webkit-gradient(linear, 0% 0%, 0% 100%, from(transparent),
-                                           color-stop(0.5, transparent),
-                                           to(rgba(255, 255, 255, 0.6)));
+  box-reflect: below -0.35em gradient(linear, 0% 0%, 0% 100%, from(transparent),
+                                      color-stop(0.5, transparent),
+                                      to(rgba(255, 255, 255, 0.6)));
 }
 
 section article section {
