@@ -202,14 +202,14 @@ body > section {
   padding: 2em;
 }
 
-article h2 {
+h2 {
   color: #4788be;
   counter-reset: part;
   font-size: 3em;
   line-height: 1em;
-  box-reflect: below -0.35em gradient(linear, 0% 0%, 0% 100%, from(transparent),
-                                      color-stop(0.5, transparent),
-                                      to(rgba(255, 255, 255, 0.6)));
+  box-reflect: below -0.3em gradient(linear, 0% 0%, 0% 100%, from(transparent),
+                                     color-stop(0.5, transparent),
+                                     to(rgba(255, 255, 255, 0.6)));
 }
 
 section article section {
@@ -351,10 +351,6 @@ nav {
   padding: 5em 0 100px 0;
   position: fixed;
   width: 140px;
-}
-
-nav li {
-  margin: 0 -0.25em;
 }
 
 body > section {
