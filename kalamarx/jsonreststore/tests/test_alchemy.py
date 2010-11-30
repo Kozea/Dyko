@@ -40,11 +40,11 @@ def test_alchemy():
         "name": AlchemyProperty(unicode, column_name="name"),
         "color": AlchemyProperty(unicode, column_name="color"), 
         "foreign": remote_property},
-        "id", True)
+        ["id"], True)
     foreign_access_point = Alchemy(url, "foreign", {
         "code": AlchemyProperty(unicode, column_name="code"), 
         "name": AlchemyProperty(unicode, column_name="name")},
-    "code", True)
+    ["code"], True)
     kalamar_site = Site()
     kalamar_site.register("test_ap", access_point)
     kalamar_site.register("foreign", foreign_access_point)

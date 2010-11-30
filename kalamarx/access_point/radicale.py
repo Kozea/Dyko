@@ -36,34 +36,32 @@ class CalDav(AccessPoint):
     """
 
     event_properties = {
+        "created": Property(datetime),
+        "description" : Property(unicode),
         "dtstart": Property(datetime),
         "dtend": Property(datetime),
         "dtstamp": Property(datetime),
-        "created": Property(datetime),
-        "uid": Property(unicode),
-        "x-radicale-name": Property(unicode),
-        "summary": Property(unicode),
         "location": Property(unicode),
         "rrule" : Property(unicode),
-        "description" : Property(unicode),
-        "sequence": Property(int)
+        "sequence": Property(int),
+        "summary": Property(unicode),
+        "uid": Property(unicode),
+        "x-radicale-name": Property(unicode)
     }
 
 
     def __event_to_item_dict(self, event):
         """Converts an event from the caldav library to a dict
-        
         """
         values = []
         for prop in self.properties:
             event_property = event.instance.vevent.contents.get(prop)
-            values.append((prop, event_property[0].value 
+            values.append((prop, event_property[0].value
                 if event_property else None))
         return dict(values)
 
     def __make_calendar(self, calendar):
         """Returns a calendar object from a calendar name
-        
         """
         return Calendar(self.__caldav_client, "%s/%s" % (self.url, calendar))
 
@@ -71,7 +69,6 @@ class CalDav(AccessPoint):
         """Returns an instance of calendar from a calendar_name
 
         If the calendar doesn't exist yet, create it
-        
         """
         calendar = self.calendars.get(calendar_name, None)
         if calendar is None:
@@ -82,7 +79,8 @@ class CalDav(AccessPoint):
 
 
     def __init__(self, url, calendars = None):
-        self.properties = dict(CalDav.event_properties)
+        self.properties = dict((name, prop.copy()) for name, prop in
+                CalDav.event_properties.items())
         self.properties.update({"calendar": Property(unicode)})
         super(CalDav, self).__init__(self.properties, ['uid'])
         self.url = url
@@ -98,8 +96,11 @@ class CalDav(AccessPoint):
         """Returns every events from every known calendar
 
         """
+        print "FETCHING:" 
         for name, calendar in self.calendars.items():
+            print "FOR CALENDAR : %s" % name
             for event in calendar.events():
+                print "AN EVENT: %s" % event
                 event = event.load()
                 itemdict = self.__event_to_item_dict(event)
                 item = Item(self, itemdict)
@@ -110,7 +111,6 @@ class CalDav(AccessPoint):
     def create(self, properties=None, lazy_loaders=None):
         """Creates a new event
 
-        
             TODO: avoid saving the event on creation, and fetch the uid later
             using the new "auto" api
         """

@@ -21,7 +21,7 @@ See http://docs.dojocampus.org/dojo/store/JsonRest for a more complete
 definition
 
 """
- 
+
 
 # pylint: disable=F0401
 try:
@@ -45,7 +45,7 @@ class KalamarJSONDecoder(json.JSONDecoder):
     """Custom JSONDecoder wich automatically fetches the references."""
 
     def __init__(self, restapi=None, **kwArgs):
-        self.restapi = restapi 
+        self.restapi = restapi
         super(KalamarJSONDecoder, self).__init__(object_hook = self._decoder)
 
     def _decoder(self, value):
@@ -86,7 +86,7 @@ class KalamarJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, AbstractItem):
             ap_name = obj.access_point.name
             ap_properties = obj.access_point.identity_properties
-            jsonvalue = {"$ref": "%s/%s" % (ap_name, "/".join([str(obj[prop])
+            jsonvalue = {"$ref": "%s/%s" % (ap_name, "/".join([str(obj[prop.name])
                 for prop in ap_properties]))}
             return jsonvalue
         else :
@@ -160,17 +160,15 @@ class JSONRest:
 
     def save_item(self, data, item):
         """Saves an item
-        
         """
-        for prop, value in data.items(): 
-            if prop not in item.access_point.identity_properties:
-                item[prop] = value
+        for prop_name, value in data.items():
+            if prop_name not in [prop.name for prop in item.access_point.identity_properties]:
+                item[prop_name] = value
         item.save()
         return JSONResponse(item)
 
     def delete_item(self, item):
         """Deletes an item
-        
         """
         item.delete()
         return JSONResponse([])
@@ -198,16 +196,12 @@ class JSONRest:
     def ref_to_item(self, ref):
         identity = ref.split("/")
         access_point = identity[0]
-        id_properties = self.kalamar.access_points[access_point].\
-                identity_properties
+        id_properties = [prop.name for prop in self.kalamar.access_points[access_point].\
+                identity_properties]
         request = dict(zip(id_properties, identity[1:]))
         return self.kalamar.open(access_point,
                 request)
 
-
-
-        
-        
 
 class JSONResponse(Response):
     """Represents an http response suitable for transporting JSON
