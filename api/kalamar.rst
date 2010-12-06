@@ -24,6 +24,9 @@
       .. automodule:: kalamar.access_point.cache
          :members:
 
+      .. automodule:: kalamar.access_point.decorator
+         :members:
+
       .. automodule:: kalamar.access_point.filesystem
          :members:
 
@@ -40,6 +43,9 @@
       :members:
 
    .. automodule:: kalamar.query
+      :members:
+
+   .. automodule:: kalamar.request
       :members:
 
    .. automodule:: kalamar.value

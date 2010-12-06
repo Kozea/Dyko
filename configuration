@@ -2,8 +2,8 @@
   "title": "Dyko",
   "menu": [
     {"name": "News", "link": "/news"},
+    {"name": "Doc", "link": "/doc"},
     {"name": "Download", "link": "/download"},
-    {"name": "Documentation", "link": "/documentation"},
     {"name": "Tutorial", "link": "/tutorial"}
   ]
 }
