@@ -1,19 +1,29 @@
-=============
-Install Dyko
-=============
+==========
+ Download
+==========
 
 
-Download Dyko
+Git Repository
 ==============
 
-Open a Terminal, then clone dyko repository. In order to get source's files of dyko ::
+If you want the development version of Dyko, take a look at the `git repository
+on Gitorious <http://www.gitorious.org/dyko/dyko>`_, or clone it thanks
+to::
 
-  git clone git ://kozea.fr/dyko
+  git clone git://gitorious.org/dyko/dyko.git
+
+You can also download the Dyko package of the git repository:
+
+- `Dyko-git.tar.gz <http://gitorious.org/dyko/dyko/archive-tarball/master>`_
 
 
-Install Dyko
-=============
+Source Packages
+===============
 
-Move on this folder and then put this instruction::
+*No source packages available yet.*
 
-  ./setup.py install
+
+Linux Distribution Packages
+===========================
+
+*No distribution packages available yet.*

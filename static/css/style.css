@@ -41,17 +41,9 @@ body {
   ----------
 */
 
-a {
-  padding: 0;
-}
-
-a:hover,
-a:focus {
-  background: none;
-}
-
 h2 {
   font-family: "foo";
+  font-size: 3em;
   margin: 0;
 }
 
@@ -61,9 +53,10 @@ h2, h3, h4, h5, h6 {
 
 pre {
   background: white;
-  border-left: solid 30px;
+  border-left: solid 0.5em;
+  border-radius: 0 1em 1em 0;
   color: #4788be;
-  margin: 1em 8%;
+  margin: 1em 1.5em;
   overflow: hidden;
   padding-left: 20px;
   text-shadow: 0 0 0 transparent;
@@ -199,17 +192,28 @@ section {
 
 body > section {
   background: #f5f5f5 url(img/background-section.png) repeat-x top left;
-  padding: 2em;
+  padding: 2em 4em;
 }
 
 h2 {
   color: #4788be;
-  counter-reset: part;
-  font-size: 3em;
   line-height: 1em;
+  margin-left: -0.75em;
   box-reflect: below -0.3em gradient(linear, 0% 0%, 0% 100%, from(transparent),
                                      color-stop(0.5, transparent),
                                      to(rgba(255, 255, 255, 0.6)));
+}
+
+h3 {
+  background-color: #dee7fa;
+  border-radius: 0.5em;
+  box-shadow: 0 0 3px #aab inset;
+  color: #345;
+  display: inline-block;
+  font-variant: small-caps;
+  font-weight: bold;
+  margin-left: -1.5em;
+  padding: 0.5em 1em;
 }
 
 section article section {
@@ -217,34 +221,28 @@ section article section {
   padding: 0 0 1.5em 0;
 }
 
-section article section:after {
+section article > section:after {
   background: url(img/separation.png) no-repeat top right;
   content: "";
   display: block;
   height: 40px;
-  margin: 0 -2em -40px -2px;
+  margin: 0 -4em -40px -2px;
 }
 
-section h3 {
-  background-color: #e1e1e1;
-  border-top: 1.2em solid black;
-  border-radius: 0.5em;
-  display: inline-block;
-  font-weight: normal;
-  padding: 0.5em 1em;
+.contents {
+  box-shadow: 0 0 5px #ddd inset,
+              3px 3px 1px #eee;
+  font-size: 1.1em;
+  line-height: 1.5em;
 }
 
-section h3:before {
-  border-radius: 0.71em 0.71em 0 0;
-  counter-increment: part;
-  content: "Part " counter(part);
-  color: white;
-  display: block;
-  font-weight: bold;
-  margin: -1.65em 0 0.5em -0.5em;
-  padding: 0;
-  white-space: nowrap;
-  width: 100%;
+.contents a {
+  padding: 0.3em;
+}
+
+.contents a:hover,
+.contents a:focus {
+  background-color: #e3e3ef;
 }
 
 
@@ -346,12 +344,23 @@ h1 a:before {
   z-index: 1;
 }
 
+h2 {
+  font-size: 2em;
+}
+
+h2, h3, h4, h5, h6 {
+  margin-left: 0;
+}
+
 nav {
-  font-size: 0.7em;
   margin: 0 0 -20px -140px;
   padding: 5em 0 100px 0;
   position: fixed;
   width: 140px;
+}
+
+nav li {
+  font-size: 2em;
 }
 
 body > section {

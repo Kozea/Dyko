@@ -3,7 +3,8 @@
   "menu": [
     {"name": "News", "link": "/news"},
     {"name": "Doc", "link": "/doc"},
-    {"name": "Download", "link": "/download"},
-    {"name": "Tutorial", "link": "/tutorial"}
+    {"name": "Tutorial", "link": "/tutorial"},
+    {"name": "Contribute", "link": "/contribute"},
+    {"name": "Download", "link": "/download"}
   ]
 }
