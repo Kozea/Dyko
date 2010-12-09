@@ -1,0 +1,14 @@
+Dyko 0.2 Ready for December 10\ :sup:`th`
+=========================================
+
+After more than two years and an half of work, the first stable version of Dyko
+is finally coming! The 0.2 release is due in 45 days, for December
+10\ :sup:`th`.
+
+7 bugs and support tickets are still open and should be closed before the
+release:
+
+- Two bugs related to primary keys management,
+- Two API waiting to be frozen,
+- One ticket about test cleaning,
+- Two support issues about the websites (presentation and API documentation).
