@@ -27,10 +27,6 @@ Theses specificities make Dyko particularly suitable for creating:
 Technical Description
 =====================
 
-The Radicale Project aims to be a light solution, easy to use, easy to install,
-easy to configure. As a consequence, it requires few software dependencies and
-is pre-configured to work out-of-the-box.
-
-The Radicale Project runs on most of the UNIX-like platforms (Linux, \*BSD,
-MacOS X) and Windows. It is free and open-source software, written in Python,
-released under GPL version 3.
+Dyko should run on most of the UNIX-like platforms (Linux, \*BSD, MacOS X) and
+Windows. It is free and open-source software, written in Python, released under
+GPL version 3.
