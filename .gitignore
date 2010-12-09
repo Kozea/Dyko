@@ -1,1 +1,3 @@
 static/api
+tutorial/*.html
+*.pyc
