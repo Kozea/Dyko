@@ -5,24 +5,6 @@
 .. contents::
 
 
-What's Dyko?
-============
-
-Dyko is a light web framework with original features:
-
-- Support for **multiple storage mechanisms** (databases, filesystems, and
-  more) with an **unified data access interface**, giving the possibility to
-  use **flexible and evolutive data models**.
-- Support for **multiple template engines** (Genshi, Jinja, Mako, and more).
-
-Theses specificities make Dyko particularly suitable for creating:
-
-- Small and simple websites with no database;
-- Content management systems with heterogeneous storage engines;
-- Web applications with chronic data model evolutions;
-- Web applications accessing static data models defined by other applications.
-
-
 API
 ===
 

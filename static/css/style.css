@@ -9,6 +9,11 @@
   src: url('foo.ttf');
 }
 
+@font-face {
+  font-family: "inconsolata";
+  src: url('inconsolata.otf');
+}
+
 /*
   ---------------
   - HTML / Body -
@@ -26,7 +31,6 @@ body {
   border: none;
   border-radius: 0 0 20px 20px;
   font-family: sans-serif;
-  font-size: 0.9em;
   margin: 0;
   opacity: 1;
   padding: 0;
@@ -42,9 +46,14 @@ body {
 */
 
 h2 {
+  box-reflect: below -0.3em gradient(linear, 0% 0%, 0% 100%, from(transparent),
+                                     color-stop(0.5, transparent),
+                                     to(rgba(255, 255, 255, 0.6)));
+  color: #4788be;
   font-family: "foo";
   font-size: 3em;
-  margin: 0;
+  line-height: 1em;
+  margin: 0 0 0 -0.5em;
 }
 
 h2, h3, h4, h5, h6 {
@@ -56,10 +65,19 @@ pre {
   border-left: solid 0.5em;
   border-radius: 0 1em 1em 0;
   color: #4788be;
+  font-family: "inconsolata";
   margin: 1em 1.5em;
   overflow: hidden;
   padding-left: 20px;
   text-shadow: 0 0 0 transparent;
+}
+
+.highlight pre {
+  border-color: purple;
+}
+
+pre.script-output {
+  border-color: orange;
 }
 
 
@@ -147,7 +165,7 @@ nav li {
   border-top: 1px solid #101010;
   color: #76b4e8;
   display: block;
-  font-size: 3em;
+  font-size: 2em;
   line-height: 1.4em;
   margin: 0;
   padding: 0 0.5em;
@@ -195,28 +213,19 @@ body > section {
   padding: 2em 4em;
 }
 
-h2 {
-  color: #4788be;
-  line-height: 1em;
-  margin-left: -0.75em;
-  box-reflect: below -0.3em gradient(linear, 0% 0%, 0% 100%, from(transparent),
-                                     color-stop(0.5, transparent),
-                                     to(rgba(255, 255, 255, 0.6)));
-}
-
 h3 {
   background-color: #dee7fa;
   border-radius: 0.5em;
   box-shadow: 0 0 3px #aab inset;
-  color: #345;
   display: inline-block;
+  font-size: 110%;
   font-variant: small-caps;
   font-weight: bold;
-  margin-left: -1.5em;
+  margin-left: -0.5em;
   padding: 0.5em 1em;
 }
 
-section article section {
+section article > section {
   background: none;
   padding: 0 0 1.5em 0;
 }
@@ -232,8 +241,6 @@ section article > section:after {
 .contents {
   box-shadow: 0 0 5px #ddd inset,
               3px 3px 1px #eee;
-  font-size: 1.1em;
-  line-height: 1.5em;
 }
 
 .contents a {
@@ -253,9 +260,9 @@ section article > section:after {
 */
 
 footer {
-  background: #000000;
+  background: black;
   border-radius: 0 0 15px 15px;
-  font-size: 0.9em;
+  font-size: 0.8em;
   display: block;
   line-height: 3.5em;
   position: relative;

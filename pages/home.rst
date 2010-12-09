@@ -1,4 +1,36 @@
-====
-Dyko
-==== 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi volutpat commodo urna, quis condimentum ipsum mattis sed. Etiam laoreet nunc at tellus pellentesque vel vehicula eros accumsan. Aenean tincidunt diam et est adipiscing ut placerat massa sodales. Phasellus placerat turpis magna. Sed facilisis neque sed lectus consectetur porttitor. Mauris convallis aliquam nibh sed sollicitudin. Integer volutpat tincidunt est ac aliquam. Proin nunc justo, elementum a sollicitudin at, tristique sed dolor. Nulla et tortor non dolor molestie molestie. Integer sed odio non velit volutpat consectetur nec ac nisi.Proin sit amet lacus ac massa pharetra bibendum nec nec lorem. Duis nulla dolor, mattis eu pharetra in, vehicula eu lacu
+=======================
+ A light web framework
+=======================
+
+Presentation
+============
+
+TODO
+
+Main Features
+=============
+
+Dyko is a light web framework with original features:
+
+- Support for **multiple storage mechanisms** (databases, filesystems, and
+  more) with an **unified data access interface**, giving the possibility to
+  use **flexible and evolutive data models**.
+- Support for **multiple template engines** (Genshi, Jinja, Mako, and more).
+
+Theses specificities make Dyko particularly suitable for creating:
+
+- Small and simple websites with no database;
+- Content management systems with heterogeneous storage engines;
+- Web applications with chronic data model evolutions;
+- Web applications accessing static data models defined by other applications.
+
+Technical Description
+=====================
+
+The Radicale Project aims to be a light solution, easy to use, easy to install,
+easy to configure. As a consequence, it requires few software dependencies and
+is pre-configured to work out-of-the-box.
+
+The Radicale Project runs on most of the UNIX-like platforms (Linux, \*BSD,
+MacOS X) and Windows. It is free and open-source software, written in Python,
+released under GPL version 3.
