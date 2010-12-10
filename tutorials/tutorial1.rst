@@ -72,9 +72,9 @@ Querying a file system
 **********************
 
 Let's assume we have a music collection on our hard-drive, located at
-``~/Music``, structured like this::
+``/opt/Music``, structured like this::
 
-  ~/Music
+  /opt/Music
       /Artist1
           /Album1
               /title1.ogg
@@ -132,7 +132,7 @@ Now, let's say we want to add a music file to our collection:
 
 .. pycode:: projects/dyko/tutorials/tutorial1/part1/save_example.py
 
-If you visit the ~/Music directory, you will notice that the directory
+If you visit the /opt/Music directory, you will notice that the directory
 structure corresponding to the artist album etc... has been created for you.
 
 Similarly, you can now delete the same file from your collection:
