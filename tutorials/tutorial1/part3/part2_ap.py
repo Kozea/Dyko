@@ -1,8 +1,7 @@
 from mutagen_ap import MutagenAP, MutagenProperty
 from kalamar.access_point.filesystem import FileSystem, FileSystemProperty
-import os
 
-file_ap = FileSystem(os.path.expanduser('~/Music/'),
+file_ap = FileSystem('/opt/Music/',
         r'(.*)/(.*)/(.*) - (.*)\.(ogg|mp3)',
         ['artist',
          'album',

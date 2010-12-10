@@ -1,11 +1,10 @@
 # Import necessary modules
 from kalamar.access_point.filesystem import FileSystem, FileSystemProperty
 from kalamar.site import Site
-import os
 
 # Declare a file system access point.
 # Items from this access point will be fetched from the root directory
-# ~/Music, and will be matched against the pattern
+# /opt/Music, and will be matched against the pattern
 # "artist/album/track - extension
 file_ap = FileSystem('/opt/Music/',
         r'(.*)/(.*)/(.*) - (.*)\.(ogg|mp3)',
