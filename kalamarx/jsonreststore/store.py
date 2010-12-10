@@ -133,15 +133,15 @@ class JSONRest:
             if request.data: 
                 kwargs['data'] = self.fromjson(request.data)
             if 'ref' in kwargs:
-                kwargs['item'] = self.ref_to_item(kwargs.pop('ref')) 
+                kwargs['item'] = self.ref_to_item(kwargs.pop('ref'))
             handler = getattr(self, endpoint)
             response = handler(**kwargs)
-            return response(environ, start_response) 
-        except NotFound:
+            return response(environ, start_response)
+        except NotFound as e:
             if self.wrapped_app:
                 return self.wrapped_app(environ, start_response)
             else:
-                raise
+                return e(environ, start_response)
 
 
 

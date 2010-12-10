@@ -18,7 +18,7 @@
 from nose.tools import eq_, nottest
 
 from kalamarx.access_point.radicale import CalDav
-from kalamar import Site 
+from kalamar.site import Site
 from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -44,7 +44,6 @@ class TestRadicale(object):
     def setUp(self):
         """Sets the test up"""
         self.temp_dir = mkdtemp()
-        print "TEMP: %s" % self.temp_dir
         self.start_radicale()
         self.site = self.make_site()
 
@@ -87,7 +86,6 @@ class TestRadicale(object):
         """Utility method asserting that the calendar contains one and only one
         event"""
         items = list(self.site.search(APNAME,{}))
-        print items
         eq_(len(items), 1)
         item = items[0]
         assert(item['uid'] is not None)

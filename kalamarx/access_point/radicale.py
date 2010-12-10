@@ -96,11 +96,8 @@ class CalDav(AccessPoint):
         """Returns every events from every known calendar
 
         """
-        print "FETCHING:" 
         for name, calendar in self.calendars.items():
-            print "FOR CALENDAR : %s" % name
             for event in calendar.events():
-                print "AN EVENT: %s" % event
                 event = event.load()
                 itemdict = self.__event_to_item_dict(event)
                 item = Item(self, itemdict)

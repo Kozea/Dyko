@@ -36,13 +36,13 @@ def test_alchemy():
     remote_property = AlchemyProperty(Item, relation="many-to-one",
     remote_ap="foreign", remote_property="code", column_name="foreign")
     access_point = Alchemy(url, "test_ap", {
-        "id": AlchemyProperty(int, column_name="id"), 
+        "id": AlchemyProperty(int, column_name="id"),
         "name": AlchemyProperty(unicode, column_name="name"),
-        "color": AlchemyProperty(unicode, column_name="color"), 
+        "color": AlchemyProperty(unicode, column_name="color"),
         "foreign": remote_property},
         ["id"], True)
     foreign_access_point = Alchemy(url, "foreign", {
-        "code": AlchemyProperty(unicode, column_name="code"), 
+        "code": AlchemyProperty(unicode, column_name="code"),
         "name": AlchemyProperty(unicode, column_name="name")},
     ["code"], True)
     kalamar_site = Site()

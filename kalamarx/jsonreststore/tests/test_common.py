@@ -188,7 +188,7 @@ def test_get_item(client):
 @commontest
 def test_create_item(client):
     """Assert that an item can be created from the rest API"""
-    foreign_item = make_query(client, 'BBB', "/foreign/") 
+    foreign_item = make_query(client, 'BBB', "/foreign/")
     item = {"id" : 10, "name": "Test create", "color": "orangered",
             "foreign" : {"$ref" : "/foreign/BBB"}}
     item = json.dumps(item)
@@ -198,7 +198,7 @@ def test_create_item(client):
     foreign_ref = items[0]["foreign"]["$ref"]
     foreign_item2 = json.loads(client.get(foreign_ref).data)
     eq_(foreign_item, foreign_item2)
-    
+
 
 @commontest
 def test_update_item(client):
@@ -223,5 +223,3 @@ def test_delete_item(client):
     items = make_query(client, '')
     eq_(len(items), 4)
     assert 3 not in [item['id'] for item in items]
-
-
