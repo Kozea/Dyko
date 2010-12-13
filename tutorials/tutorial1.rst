@@ -234,6 +234,8 @@ previously!
 
 .. pycode:: projects/dyko/tutorials/tutorial1/part3/data_migration.py
 
+.. pyexec:: projects/dyko/tutorials/tutorial1/part3/data_migration.py
+
 Obviously, we should store these data elsewhere than in an in-memory database.
 But for the sake of this tutorial, let's keep it like this.
 
@@ -259,6 +261,8 @@ Migrating our data is as easy as before, we just have to add the old item as a
 property.
 
 .. pycode:: projects/dyko/tutorials/tutorial1/part4/data_migration.py
+
+.. pyexec:: projects/dyko/tutorials/tutorial1/part4/data_migration.py
 
 And using our good old search code, modified for the occasion, we can access the
 file on the file system directly from the item returned from the database.
