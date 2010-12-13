@@ -1,0 +1,20 @@
+<html>
+<body>
+<h1>{{blog_entry['title']}}</h1>
+<p>{{blog_entry['content']}}</p>
+<span>{{blog_entry['submitted'].strftime('%c')}}</span>
+<form action="/post/{{blog_entry['id']}}/comment" method="post">
+  <label for="comment_input">Comment:</label>
+  <textarea id="comment_input" name="comment_input"></textarea>
+  <input type="submit">
+</form>
+<ul>
+{% for comment in blog_entry['comments'] %}
+  <li>
+    <h4>{{comment['submitted'].strftime('%c')}}</h4>
+    <p>{{comment['content']}}</p>
+  </li>
+{% endfor %}
+</ul>
+</body>
+</html>

@@ -159,7 +159,7 @@ Moreover, we may want to add additional information on the file.
 In audio files, ID3 tags are a great way to store such information.
 
 We will use the AcessPointWrapper faciity to parse and write ID3 tags with the
-mutagen library (TODO: explain how to install mutagen).
+`mutagen library <http://code.google.com/p/mutagen/>`_
 
 Kalamar ships with a Decorator access point designed specifically for that. The
 decorator access point add a few properties to an access point definition which
@@ -211,11 +211,6 @@ Let's say we want to store the meta-data in a database, and the actual files on 
 filesystem.
 
 Let's begin with the database part.
-
-.. note::
-
-   We will use SQLite to store the data, so you will have to install it. Please
-   refer to the installation instructions at <TODO: add link>
 
 The alchemy access point allows us to use SQLAlchemy to access any RDBMS.
 
