@@ -72,6 +72,12 @@ pre {
   text-shadow: 0 0 0 transparent;
 }
 
+.highlight {
+  /* TODO: remove this as soon as the new colors are set for pygments,
+           use transparent for the background! */
+  background-color: transparent !important;
+}
+
 .highlight pre {
   border-color: purple;
 }
