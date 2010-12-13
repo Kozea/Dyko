@@ -72,9 +72,9 @@ Querying a file system
 **********************
 
 Let's assume we have a music collection on our hard-drive, located at
-``~/Music``, structured like this::
+``/opt/Music``, structured like this::
 
-  ~/Music
+  /opt/Music
       /Artist1
           /Album1
               /title1.ogg
@@ -132,7 +132,7 @@ Now, let's say we want to add a music file to our collection:
 
 .. pycode:: projects/dyko/tutorials/tutorial1/part1/save_example.py
 
-If you visit the ~/Music directory, you will notice that the directory
+If you visit the /opt/Music directory, you will notice that the directory
 structure corresponding to the artist album etc... has been created for you.
 
 Similarly, you can now delete the same file from your collection:
@@ -159,7 +159,7 @@ Moreover, we may want to add additional information on the file.
 In audio files, ID3 tags are a great way to store such information.
 
 We will use the AcessPointWrapper faciity to parse and write ID3 tags with the
-mutagen library (TODO: explain how to install mutagen).
+`mutagen library <http://code.google.com/p/mutagen/>`_
 
 Kalamar ships with a Decorator access point designed specifically for that. The
 decorator access point add a few properties to an access point definition which
@@ -211,11 +211,6 @@ Let's say we want to store the meta-data in a database, and the actual files on 
 filesystem.
 
 Let's begin with the database part.
-
-.. note::
-
-   We will use SQLite to store the data, so you will have to install it. Please
-   refer to the installation instructions at <TODO: add link>
 
 The alchemy access point allows us to use SQLAlchemy to access any RDBMS.
 

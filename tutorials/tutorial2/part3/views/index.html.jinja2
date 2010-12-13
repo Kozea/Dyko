@@ -1,0 +1,9 @@
+<html>
+<body>
+<h1>My Blog</h1>
+{% for blog_item in kalamar.search('blog_entry') %}
+  <h2>{{ blog_item['title'] }}</h2>
+  <section> {{blog_item['content'] }}</section>
+{% endfor %}
+</body>
+</html>
