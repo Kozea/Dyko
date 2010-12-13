@@ -1,0 +1,10 @@
+<html>
+<body>
+<h1>My Blog</h1>
+{% for blog_item in kalamar.view('blog_entry', order_by=[('submitted', False)],
+    select_range=10) %}
+  <h2><a href='/post/{{blog_item['id']}}'>{{ blog_item['title'] }}</a></h2>
+  <section> {{blog_item['content'] }}</section>
+{% endfor %}
+</body>
+</html>

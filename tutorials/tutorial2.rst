@@ -377,7 +377,7 @@ For this, we will register a controller for the same /post/add url, but speciali
 .. pycode:: projects/dyko/tutorials/tutorial2/part4/controllers.py
 
 We used the expose decorator instead of expose_template, because we want to redirect the user
-in order to avoid resubmssion (using the `"303" HTTP status code <http://en.wikipedia.org/wiki/HTTP_303>`_).
+in order to avoid resubmission (using the `"303" HTTP status code <http://en.wikipedia.org/wiki/HTTP_303>`_).
 
 And now, we can add our own blog posts !
 
@@ -403,8 +403,8 @@ Let's see the comments property definition for the blog_entry access point:
 
 It's type is iter, because a blog entry is associated to multiple comments.
 This is also why we have to specify that the relationship is a 'one-to-many' relationship.
-The remot_ap argument refers to the name under which the other access point is registered, and
- remote_property is used to retrieved the comments linked to this entry.
+The remote_ap argument refers to the name under which the other access point is registered, and
+remote_property is used to retrieved the comments linked to this entry.
 
 Similarly, this is how we define the comments access point:
 
@@ -461,8 +461,61 @@ Using the view queries, you can:
 
     - Return partial view of an item
     - Return attributes from different items linked together by a relationship
-    - Filter on attributes od
+    - Filter on attributes from different items
     - Order your queries
+    - Return only a specific range (for example, the first 10 items).
+
+We'll use the view method to display only the 10 latest post on the index page
+
+.. pycode:: projects/dyko/tutorials/tutorial2/part5/views/index.html.jinja2 jinja
+
+
+The order_by argument must be a list of tuple.
+
+.. code-block:: python
+
+    order_by = [('submitted', False)]
+
+That means that we order the entries by the 'submitted' attribute, in descending order
+(the False value)
+
+The select_range argument can be either an integer or a tuple. An integer value limits the
+results, whereas a tuple argument represents a range.
+
+.. code-block:: python
+
+    # Select the first 10 items
+    select_range = 10
+    # It is equivalent to:
+    select_range = (0,10)
+
+Let's take a look at some example queries, using our blog site:
+
+Select all comments attached to blog posts published before 2000
+
+.. code-block:: python
+
+    condition = Condition('blog_entry.submitted', '<', datetime(2000,1, 1))
+    kalamar.view('comment', request=condition)
+
+Select only the date from previous comments, along with the entry date:
+
+.. code-block:: python
+
+    aliases = {
+        'comment_date': 'submitted',
+        'entry_date': 'blog_entry.submitted'
+    }
+    kalamar.view('comment', request=condition, aliases=aliases)
+
+Select distinct comment content:
+
+.. code-block:: python
+
+    kalamar.view('comment', aliases={'content': 'content'}, distinct=True)
+
+TODO: add more examples
+
 
 
 
