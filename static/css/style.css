@@ -53,6 +53,7 @@ h2 {
   font-family: "foo";
   font-size: 3em;
   line-height: 1em;
+  font-weight: lighter;
   margin: 0 0 0 -0.5em;
 }
 
@@ -183,6 +184,7 @@ nav {
   display: block;
   float: left;
   font-family: "foo";
+  font-weight: lighter;
   margin: 3em -300px 0 -235px;
   padding: 50px 300px 200px 0;
   width: 235px;
