@@ -66,7 +66,7 @@ pre {
   border-left: solid 0.5em;
   border-radius: 0 1em 1em 0;
   color: #4788be;
-  font-family: "inconsolata";
+  font-family: "inconsolata", monospace;
   margin: 1em 1.5em;
   overflow: hidden;
   padding-left: 20px;
@@ -75,7 +75,7 @@ pre {
 
 code {
   color: black;
-  font-family: "inconsolata";
+  font-family: "inconsolata", monospace;
 }
 
 .highlight {
