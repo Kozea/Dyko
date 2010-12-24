@@ -73,6 +73,11 @@ pre {
   text-shadow: 0 0 0 transparent;
 }
 
+code {
+  color: black;
+  font-family: "inconsolata";
+}
+
 .highlight {
   /* TODO: remove this as soon as the new colors are set for pygments,
            use transparent for the background! */
@@ -87,36 +92,16 @@ pre.script-output {
   border-color: orange;
 }
 
-/*
-section.url-output {
+iframe {
   background: white;
-  border-left: solid 0.5em;
-  border-radius: 0 1em 1em 0;
-  border-color: orange;
-  margin: 1em 1.5em;
-  overflow: hidden;
-  padding-left: 20px;
-  text-shadow: 0 0 0 transparent;
+  border-color: #13a;
+  border-style: solid;
+  border-radius: 0.5em 0.5em 0 0;
+  border-width: 1.5em 1px 1px 1px;
+  box-shadow: 3px 3px 3px #ddd;
+  display: block;
+  margin: 1em auto;
 }
-
-section.url-output h1, 
-section.url-output h2
-{
-  background: none;
-  color: black;
-  font-size: 100%;
-  margin: 0 0 0 0;
-  height: 1.2em;
-  font-family: sans-serif;
-}
-
-section.url-output h1:before ,
-section.url-output h1:after {
-  content: none;
-  color: black;
-}
-*/
-
 
 
 /*

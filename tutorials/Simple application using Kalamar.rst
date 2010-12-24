@@ -1,6 +1,8 @@
 Simple Application using Kalamar
 ================================
 
+:abstract: Create a simple music database with a command-line interface.
+
 .. contents::
 
 Goal
@@ -21,10 +23,10 @@ After a succinct description of Kalamar core concepts, we will use Kalamar to
 perform search on a music collection using a command-line interface.
 
 Then, we will implement our own access point to extract ID3 tags from our music
-collectino. 
+collection. 
 
 In a third part, we will populate a database with those tags, and show how
-powerpull Kalamar relationships are to link heterogenous data sources.
+powerful Kalamar relationships are to link heterogenous data sources.
 
 
 Concepts
