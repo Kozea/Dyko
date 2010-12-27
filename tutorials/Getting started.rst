@@ -11,7 +11,8 @@ Getting Started
 Installing Dyko
 ---------------
 
-See TODO: provide link to dyko installation instructions
+See `the documentation page </doc#installation>`_ to install Dyko, with the
+SQLAlchemy backend.
 
 
 Defining a data source (AKA 'access point')
@@ -20,7 +21,7 @@ Defining a data source (AKA 'access point')
 We will begin by defining a simple data model, backed by the sqlite RDBMS.
 This data model will consist of only one table, named ``blog_entry``.
 
-The dyko module responsible for this is the ``kalamar.access_point.alchemy``.
+The Dyko module responsible for this is the ``kalamar.access_point.alchemy``.
 
 .. note::
 
@@ -36,14 +37,14 @@ To do this, we will need to import the following classes:
    from kalamar.access_point.alchemy import Alchemy, AlchemyProperty
    from kalamar.site import Site
 
-The Alchemy class is the access point implementation. It is named Alchemy
+The ``Alchemy`` class is the access point implementation. It is named Alchemy
 because it is backed by the `SQLAlchemy SQL toolkit
-<http://www.sqlalchemy.org/>`_ The ``AlchemyProperty`` is the class responsible
+<http://www.sqlalchemy.org/>`_. The ``AlchemyProperty`` class is responsible
 for defining an item property. The ``Site`` class is the main Kalamar entry
 point: whenever you want to use an access point, you will have to use the site.
 
 Now that those modules are imported, we can define our blog_entry access point.
-It will store entries in an sqlite *entry* table, and have (for now!) only four 
+It will store entries in an SQLite *entry* table, and have (for now!) only four 
 columns:
 
 - ``id``, which will act as an auto generated primary key;
@@ -84,20 +85,20 @@ We can now build our access point itself from its properties:
 .. code-block:: python
 
    blog_entry_properties = {
-       'id' : id_property,
+       'id': id_property,
        'title': title_property,
        'content': content_property,
        'submitted': submitted_property}
    blog_entry_access_point = Alchemy(
-       "sqlite:///", "entry", blog_entry_properties, ['id'], createtable=True)
+       'sqlite:///', 'entry', blog_entry_properties, ['id'], createtable=True)
 
 The Alchemy access point constructor is given the following arguments:
 
-- ``'sqllite:///'``: the connection url to the database. We use here an
+- ``'sqlite:///'``: the connection URL to the database. We use here an
   in-memory SQLite database;
-- ``entry``: the table name;
+- ``'entry'``: the table name;
 - A dictionary mapping the property names to their definitions;
-- An list containing the name of the properties used as identity property
+- A list containing the name of the properties used as identity properties
   (translated to a primary key definition in the underlying table);
 - the ``createtable`` keyword argument, which instructs Kalamar to create the
   underlying table if needed.
@@ -125,10 +126,10 @@ The site offer 4 basic methods for
 `CRUD <http://en.wikipedia.org/wiki/Create,_read,_update_and_delete>`_
 operations:
 
-- create: creates an item;
+- create: create an item;
 - search: search the access point for matching items;
 - delete: delete an item;
-- save: save or updates an item.
+- save: save or update an item.
 
 We will begin by creating some items, and saving them to the database:
 
@@ -160,13 +161,13 @@ We will begin by creating some items, and saving them to the database:
        "title": "Kalamar is Kool",
        "content": "And the gang is too!",
        "submitted": datetime(2010, 8, 1)}
-   fourth_blog_entry = site.create("blog_entry", fourth_blog_entry)
+   fourth_blog_entry = site.create("blog_entry", fourth_blog_entry_properties)
    fourth_blog_entry.save()
 
 Now that the items are created and stored in the database, we can query it.
 
-This first example uses the search method, without any query. It will list every
-single entry from the database, and dump it to the console:
+This first example uses the ``search`` method, without any query. It will list
+every single entry from the database, and dump it to the console:
 
 .. code-block:: python
 
@@ -187,8 +188,8 @@ Another example, this time using a simple query:
 .. pyexec:: projects/dyko/tutorials/tutorial2/part2/search_query2.py
 
 The dictionary notation for a request is just a shortcut for its object
-counterpart: ``kalamar.request`` module offers what you need to perform more
-advanced queries. Here are some examples:
+counterpart: the ``kalamar.request`` module offers what you need to perform
+more advanced queries. Here are some examples:
 
 .. pycode:: projects/dyko/tutorials/tutorial2/part2/search_query3.py
 
@@ -448,8 +449,8 @@ The ``order_by`` argument must be a list of tuples.
 That means that we order the entries by the 'submitted' attribute, in
 descending order (the ``False`` value).
 
-The select_range argument can be either an integer or a tuple. An integer value
-limits the results, whereas a tuple argument represents a range.
+The ``select_range`` argument can be either an integer or a tuple. An integer
+value limits the results, whereas a tuple argument represents a range.
 
 .. code-block:: python
 
@@ -480,8 +481,6 @@ Select distinct comment content:
 .. code-block:: python
 
    kalamar.view('comment', aliases={'content': 'content'}, distinct=True)
-
-TODO: add more examples
 
 
 
