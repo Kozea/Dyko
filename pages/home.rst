@@ -1,11 +1,6 @@
-=======================
- A light web framework
-=======================
-
-Presentation
-============
-
-TODO
+==============================
+ Dyko - A Light Web Framework
+==============================
 
 Main Features
 =============
@@ -14,7 +9,7 @@ Dyko is a light web framework with original features:
 
 - Support for **multiple storage mechanisms** (databases, filesystems, and
   more) with an **unified data access interface**, giving the possibility to
-  use **flexible and evolutive data models**.
+  use **flexible and evolutive data models**;
 - Support for **multiple template engines** (Genshi, Jinja, Mako, and more).
 
 Theses specificities make Dyko particularly suitable for creating:
