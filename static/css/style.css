@@ -251,8 +251,7 @@ h3 {
   background-color: #dee7fa;
   border-radius: 0.5em;
   box-shadow: 0 0 3px #aab inset;
-  display: block;
-  float: left;
+  display: inline-block;
   font-size: 110%;
   font-variant: small-caps;
   font-weight: bold;
@@ -260,8 +259,9 @@ h3 {
   padding: 0.5em 1em;
 }
 
-h3 ~ * {
-  clear: left;
+h2 ~ * {
+  /* Fix bug for Webkit, as inline-blocks don't reset counters */
+  counter-reset: subtitle;
 }
 
 section article > section {
