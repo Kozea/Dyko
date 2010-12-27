@@ -33,7 +33,13 @@
       .. automodule:: kalamar.access_point.memory
          :members:
 
+      .. automodule:: kalamar.access_point.xml.rest
+         :members:
+
       .. automodule:: kalamar.access_point.unicode_stream
+         :members:
+
+      .. automodule:: kalamar.access_point.xml
          :members:
 
    .. automodule:: kalamar.item
