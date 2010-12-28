@@ -1,0 +1,13 @@
+Dyko 0.2 Released
+=================
+
+Two weeks late, Dyko 0.2 is out! Here is what's new:
+
+0.2 - Twin Poulpe
+-----------------
+
+* First public release
+* MultiDict items
+* Database, filesystem, XML and ReST access points
+* Typed properties
+* Clean tests
