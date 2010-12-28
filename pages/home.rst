@@ -1,11 +1,11 @@
-=======================
- A Light Web Framework
-=======================
+=============================
+ A Lightweight Web Framework
+=============================
 
 Main Features
 =============
 
-Dyko is a light web framework with original features:
+Dyko is a lightweight web framework with original features:
 
 - Support for **multiple storage mechanisms** (databases, filesystems, and
   more) with an **unified data access interface**, giving the possibility to

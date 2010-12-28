@@ -3,6 +3,15 @@
 ==========
 
 
+PyPI
+====
+
+Dyko is `available on PyPI <http://pypi.python.org/pypi/Dyko/>`_. To install,
+just type as superuser::
+
+  easy_install dyko
+
+
 Git Repository
 ==============
 
@@ -20,7 +29,7 @@ You can also download the Dyko package of the git repository:
 Source Packages
 ===============
 
-*No source packages available yet.*
+- `Dyko-0.2 </src/dyko/Dyko-0.2.tar.gz>`_ (69 KiB)
 
 
 Linux Distribution Packages

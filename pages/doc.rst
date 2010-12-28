@@ -11,7 +11,10 @@ Installation
 Using PyPI
 ----------
 
-*Coming soon*
+Dyko is `available on PyPI <http://pypi.python.org/pypi/Dyko/>`_. To install,
+just type as superuser::
+
+  easy_install dyko
 
 Using sources
 -------------
@@ -52,14 +55,28 @@ Howto
 Create a simple website
 -----------------------
 
-Text
+Quick and dirty website in 1 minute::
+
+  $ easy_install Dyko, Werkzeug, Jinja2
+  $ mkdir website
+  $ cd website
+  $ mkdir views
+  $ cat "<h1>Hello world</h1>" > views/hello.html.jinja2
+  $ python
+  >>> from kraken import runserver, site
+  >>> runserver(site.Site())
+
+Then open http://localhost:5000/hello in a browser.
+
+If you want to go further, just `get started </tutorials/Getting%20started>`_.
 
 Use multiple template engines
 -----------------------------
 
-Text
+In your folder containing the views, the files should have two extensions. The
+first one is used for mimetype, the second one for the template engine. A file
+called ``hello.html.jinja2`` will be (by default) available at the ``/hello``
+URL, with a ``text/html`` mimetype, parsed by the Jinja2 template engine.
 
-Make my application use a clear model-view-controller organization
-------------------------------------------------------------------
-
-Text
+You can learn `more about template engines
+</static/api/kraken.html#template-engine>`_ in our API documentation.
