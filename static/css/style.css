@@ -5,8 +5,8 @@
 */
 
 @font-face {
-  font-family: "foo";
-  src: url(foo.ttf);
+  font-family: "borisblackbloxx";
+  src: url(borisblackbloxx.ttf);
 }
 
 @font-face {
@@ -55,12 +55,12 @@ a:hover, a:focus {
 }
 
 h2 {
-  box-reflect: below -0.3em gradient(linear, 0% 0%, 0% 100%, from(transparent),
-                                     color-stop(0.5, transparent),
-                                     to(rgba(255, 255, 255, 0.6)));
+  box-reflect: below 0.1em gradient(linear, 0% 0%, 0% 100%, from(transparent),
+                                    color-stop(0.5, transparent),
+                                    to(rgba(255, 255, 255, 0.15)));
   color: #4788be;
-  font-family: "foo";
-  font-size: 3em;
+  font-family: "borisblackbloxx";
+  font-size: 2.5em;
   line-height: 1em;
   font-weight: lighter;
   margin: 0 0 0.5em -0.5em;
@@ -113,6 +113,12 @@ iframe {
   margin: 1em auto;
 }
 
+#rss {
+  position: relative;
+  text-shadow: 0 0 0 transparent;
+  z-index: 1;
+}
+
 
 /*
   ----------
@@ -137,6 +143,7 @@ h1 {
 
 h1 a {
   border-radius: 0;
+  padding: 0;
   visibility: hidden;
 }
 
@@ -178,7 +185,7 @@ nav {
   background: url(img/tentacle-nav.png) no-repeat bottom left;
   display: block;
   float: left;
-  font-family: "foo";
+  font-family: "borisblackbloxx";
   font-weight: lighter;
   margin: 3em -300px 0 -235px;
   padding: 50px 300px 200px 0;
@@ -385,7 +392,7 @@ h1 {
 h1 a:before {
   color: white;
   content: "DYKO";
-  font: 50px "foo";
+  font: 35px "borisblackbloxx";
   left: 0.1em;
   line-height: 1em;
   position: fixed;
