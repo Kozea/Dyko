@@ -61,7 +61,7 @@ Quick and dirty website in 1 minute::
   $ mkdir website
   $ cd website
   $ mkdir views
-  $ cat "<h1>Hello world</h1>" > views/hello.html.jinja2
+  $ echo "<h1>Hello world</h1>" > views/hello.html.jinja2
   $ python
   >>> from kraken import runserver, site
   >>> runserver(site.Site())
