@@ -80,3 +80,11 @@ URL, with a ``text/html`` mimetype, parsed by the Jinja2 template engine.
 
 You can learn `more about template engines
 </static/api/kraken.html#template-engine>`_ in our API documentation.
+
+Create a WSGI-based website
+---------------------------
+
+Install `flup <http://trac.saddi.com/flup>`_ and wrap the Kraken ``Site`` in
+the WSGI server. In `this example
+<http://trac.saddi.com/flup/wiki/FlupServers>`_, ``myapp`` can be a Kraken
+``Site``.
