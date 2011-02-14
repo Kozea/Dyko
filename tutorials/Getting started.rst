@@ -228,7 +228,7 @@ To use a Kraken instance, just use the following code:
 
 .. code-block:: python
 
-   import kraken
+   import kraken.site
 
    site = kraken.site.Site()
    kraken.runserver(site)
