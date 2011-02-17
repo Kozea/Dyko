@@ -287,7 +287,7 @@ posts?
 Using Controllers
 -----------------
 
-Kraken offer some basic solutions to implement code that don't belong to in the
+Kraken offer some basic solutions to implement code that doesn't belong to in the
 template.
 
 Two python decorators are available for this:

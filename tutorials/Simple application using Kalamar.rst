@@ -101,7 +101,7 @@ You can freely download the `sample music collection </static/music.tar.gz>`_.
 The sample music collection only contains CC-licensed titles, downloaded from
 Jamendo.
 
-In a file named site.py, copy the following code:
+In a file named ``kalamar_site.py``, copy the following code:
 
 .. pycode:: projects/dyko/tutorials/tutorial1/part1/kalamar_site.py
 
@@ -210,7 +210,7 @@ Moving to a database
 
 So far we have provided a way to query against a file system, but as our music
 collection grows, the query performance will have to be better than parsing
-evrything on the file system.
+everything on the file system.
 
 Let's say we want to store the metadata in a database, and the actual files on a
 filesystem.

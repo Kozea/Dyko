@@ -4,7 +4,7 @@ from kalamar.access_point import NotOneMatchingItem
 import os.path
 
 # The open method works like search, except it return one and only one item.
-# It the given criteria matches more or less than one item, it throws an
+# If the given criteria matches more or less than one item, it throws an
 # exception.
 try:
     kalamar_site.open("music", {"track": 2})
