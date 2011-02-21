@@ -32,6 +32,7 @@ except ImportError:
 
 class LdapProperty(Property):
     """Property for a Ldap access point."""
+
     def __init__(self, rdn_name=None, **kwargs):
         super(LdapProperty, self).__init__(unicode, **kwargs)
         self.rdn_name = rdn_name
@@ -70,8 +71,6 @@ class Ldap(AccessPoint):
     def delete(self, item):
         """Delete ``item`` from the Ldap."""
         ident = "cn=%s,%s" % (item["cn"],  self.ldap_path)
-        print(ident)
-        print(ident)
         self.ldap.delete_s(ident)
 
     def save(self, item):
@@ -84,7 +83,6 @@ class Ldap(AccessPoint):
             for value in values:
                 new_values.append(value.encode(self.encoding))
             modlist.append((key, tuple(new_values)))
-        print(modlist)
         old_entry = self.open(Condition("cn", "=", item["cn"]), None)
         if old_entry:
             self.ldap.modify_s(
