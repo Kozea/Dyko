@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# This file is part of Dykox
+# This file is part of Dyko
 # Copyright © 2011 Kozea
 #
 # This library is free software: you can redistribute it and/or modify
@@ -15,32 +15,37 @@
 # You should have received a copy of the GNU General Public License
 # along with Kalamar.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This module provides an AccessPoint implementation to access a LDAP server
+"""
+LDAP
+====
+
+Access point storing items in an LDAP server.
+
 """
 
 from __future__ import print_function
 from kalamar.item import Item, MultiDict
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
-from kalamar.request import Condition, And, Or, Not
+from kalamar.request import And, Or, Not
 
 try:
     import ldap
 except ImportError:
     import sys
-    print("WARNING: python-ldap module is not available.", file=sys.stderr)
+    print("WARNING: The LDAP AP is not available.", file=sys.stderr)
+
 
 class LdapItem(Item):
     """Item stored as a file."""
-
     @property
     def dn(self):
-        """Distinguished name of the Ldap item."""
+        """Distinguished name of the LDAP item."""
         return "cn=%s,%s" % (self["cn"],  self.access_point.ldap_path)
 
-class LdapProperty(Property):
-    """Property for a Ldap access point."""
 
+class LdapProperty(Property):
+    """Property for an LDAP access point."""
     def __init__(self, rdn_name=None, **kwargs):
         super(LdapProperty, self).__init__(unicode, **kwargs)
         self.rdn_name = rdn_name
@@ -48,8 +53,7 @@ class LdapProperty(Property):
 
 
 class Ldap(AccessPoint):
-    """Access point to a LDAP server"""
-
+    """Access point to an LDAP server."""
     ItemClass = LdapItem
 
     def __init__(self, hostname, ldap_path, user, password, properties, 
@@ -68,14 +72,14 @@ class Ldap(AccessPoint):
             prop.name = name
     
     def _to_ldap_filter(self, condition):
-        """Convert a kalamar condition to an ldap filter."""
+        """Convert a kalamar condition to an LDAP filter."""
         if isinstance(condition, (And, Or, Not)):
             if isinstance(condition, Not):
                 return "(! %s)" % self._to_ldap_filter(condition.sub_request)
-            if isinstance(condition, And):
-                operator = '&'
+            elif isinstance(condition, And):
+                operator = "&"
             elif isinstance(condition, Or):
-                operator = '|'
+                operator = "|"
             return "(%s %s)" % (
                 operator, " ".join(
                     self._to_ldap_filter(sub_condition) 
@@ -85,7 +89,6 @@ class Ldap(AccessPoint):
                 condition.property, condition.operator, condition.value)
 
     def search(self, request):
-        """Return an iterable of every item matching request."""
         ldap_request = self._to_ldap_filter(request)
         for _, ldap_result in self.ldap.search_s(
             self.ldap_path, ldap.SCOPE_SUBTREE, ldap_request,
@@ -93,36 +96,24 @@ class Ldap(AccessPoint):
             [prop.rdn_name for prop in self.properties.values()]):
             multidict = MultiDict()
             for prop in self.properties.values():
-                decoded_values = []
-                values = ldap_result.get(prop.rdn_name, None)
-                if values:
-                    for value in values:
-                        decoded_values.append(value.decode(self.encoding))
-                    multidict.setlist(prop.rdn_name, tuple(decoded_values))
-                else:
-                    multidict.setlist(prop.rdn_name, (None,))
+                values = (
+                    value.decode(self.encoding)
+                    for value in ldap_result.get(prop.rdn_name, ()))
+                multidict.setlist(prop.rdn_name, tuple(values) or (None,))
             yield self.create(multidict)
                     
     def delete(self, item):
-        """Delete ``item`` from the Ldap."""
         self.ldap.delete_s(item.dn)
 
     def save(self, item):
-        """Update or add the item."""
-        modlist = []
-        for key in item.keys():
-            values = item.getlist(key)
-            new_values = []
-            for value in values:
-                new_values.append(value.encode(self.encoding))
-            modlist.append((key, tuple(new_values)))
-        old_entry = self.open(Condition("cn", "=", item["cn"]), None)
+        modifications = {}
+        for key in item:
+            modifications[key] = tuple(
+                value.encode(self.encoding) for value in item.getlist(key))
+
+        old_entry = self.open({"cn": item["cn"]}, None)
         if old_entry:
             self.ldap.modify_s(
-                item.dn, ldap.modlist.modifyModlist(old_entry, dict(modlist)))
+                item.dn, ldap.modlist.modifyModlist(old_entry, modifications))
         else:
-            self.ldap.add_s(item.dn, modlist)
- 
-
-
-    
+            self.ldap.add_s(item.dn, modifications)
