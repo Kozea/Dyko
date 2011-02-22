@@ -34,7 +34,8 @@ try:
 except ImportError:
     import sys
     print("WARNING: The LDAP AP is not available.", file=sys.stderr)
-
+else:
+    import ldap.modlist
 
 class LdapItem(Item):
     """Item stored as a file."""
