@@ -27,7 +27,7 @@ from __future__ import print_function
 from kalamar.item import Item, MultiDict
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
-from kalamar.request import And, Or, Not
+from kalamar.request import Condition, And, Or, Not
 
 try:
     import ldap
@@ -110,10 +110,9 @@ class Ldap(AccessPoint):
         for key in item:
             modifications[key] = tuple(
                 value.encode(self.encoding) for value in item.getlist(key))
-
-        old_entry = self.open({"cn": item["cn"]}, None)
+        old_entry = self.open(Condition("cn", "=", item["cn"]), None)
         if old_entry:
             self.ldap.modify_s(
                 item.dn, ldap.modlist.modifyModlist(old_entry, modifications))
         else:
-            self.ldap.add_s(item.dn, modifications)
+            self.ldap.add_s(item.dn, modifications.items())
