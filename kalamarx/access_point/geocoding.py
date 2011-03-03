@@ -30,7 +30,7 @@ from __future__ import print_function
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
 from kalamar.request import Condition
-import urllib, json
+import urllib, json, shelve
 
 API_URL="http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address="
 
@@ -38,9 +38,13 @@ class GeocoderException(Exception):
     pass
 
 class Geocoder(AccessPoint):
-    """Access point to a Google Geocoding API."""
+    """Access point to a Google Geocoding API.
 
-    def __init__(self):
+    If you want the geocode cache to be persistent, set persistent_file 
+    to a file path
+"""
+
+    def __init__(self, persistent_file=None):
         properties = {
             "address": Property(unicode),
             "lat": Property(float),
@@ -48,24 +52,36 @@ class Geocoder(AccessPoint):
             }
         identity_properties = ("address",)
         super(Geocoder, self).__init__(properties, identity_properties)
+        if persistent_file is None:
+            self._cache = {}
+        else:
+            self._cache = shelve.open(persistent_file)
 
     def search(self, request):
         if not (isinstance(request, Condition) 
                 and request.property.name == "address"):
             raise NotImplementedError(
                 "Only simple search an 'address' is currently supported")
-
-        results = json.loads(
-            urllib.urlopen(API_URL + urllib.quote(request.value)).read())
-        if results["status"] not in ("OK", "ZERO_RESULTS"):
-            raise GeocoderException(results["status"])
         
-        for result in results["results"]:
-            yield self.create({
+        results = self._cache.get(request.value.encode("utf-8"), None)
+        if results:
+            print("From cache")
+        if not results:
+            print("From net")
+            json_results = json.loads(
+                urllib.urlopen(API_URL + urllib.quote(request.value.encode("utf-8"))).read())
+            if json_results["status"] not in ("OK", "ZERO_RESULTS"):
+                raise GeocoderException(json_results["status"])
+            results = [{
                     "address": request.value,
-                    "lat": result["geometry"]["location"]["lat"],
-                    "lng": result["geometry"]["location"]["lng"]
-                    })
+                    "lat": json_result["geometry"]["location"]["lat"],
+                    "lng": json_result["geometry"]["location"]["lng"]
+                    } for json_result in json_results["results"]]
+            self._cache[request.value.encode("utf-8")] = results
+            if type(self._cache) != dict:
+                self._cache.sync()
+        for result in results:
+            yield self.create(result)
                     
     def delete(self, item):
         raise NotImplementedError("Read only access point")
