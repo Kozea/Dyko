@@ -5,6 +5,7 @@
     {"name": "Doc", "link": "/doc"},
     {"name": "Tutorials", "link": "/tutorials"},
     {"name": "Contribute", "link": "/contribute"},
+    {"name": "DykoX", "link": "/dykox"},
     {"name": "Download", "link": "/download"}
   ]
 }
