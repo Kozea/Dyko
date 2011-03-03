@@ -228,7 +228,7 @@ To use a Kraken instance, just use the following code:
 
 .. code-block:: python
 
-   import kraken
+   import kraken.site
 
    site = kraken.site.Site()
    kraken.runserver(site)
@@ -261,6 +261,10 @@ module.
 
 .. pycode:: projects/dyko/tutorials/tutorial2/part3/blog_kalamar.py
 
+And update ``kraken_site.py`` with the following:
+
+.. pycode:: projects/dyko/tutorials/tutorial2/part3/kraken_site.py
+
 You should now have the following directory structure::
 
     myproject
@@ -268,8 +272,6 @@ You should now have the following directory structure::
         /blog_kalamar.py
         /views
             /hello_world.html.jinja2
-
-.. pycode:: projects/dyko/tutorials/tutorial2/part3/kraken_site.py
 
 You can now use your Kalamar site from within your application.
 Open a new ``views/index.html.jinja2`` file, and create a simple template:
@@ -285,7 +287,7 @@ posts?
 Using Controllers
 -----------------
 
-Kraken offer some basic solutions to implement code that don't belong to in the
+Kraken offer some basic solutions to implement code that doesn't belong to in the
 template.
 
 Two python decorators are available for this:
