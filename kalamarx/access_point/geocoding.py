@@ -64,12 +64,11 @@ class Geocoder(AccessPoint):
                 "Only simple search an 'address' is currently supported")
         
         results = self._cache.get(request.value.encode("utf-8"), None)
-        if results:
-            print("From cache")
-        if not results:
-            print("From net")
+        if results is None:
             json_results = json.loads(
-                urllib.urlopen(API_URL + urllib.quote(request.value.encode("utf-8"))).read())
+                urllib.urlopen(
+                    API_URL + urllib.quote(
+                        request.value.encode("utf-8"))).read())
             if json_results["status"] not in ("OK", "ZERO_RESULTS"):
                 raise GeocoderException(json_results["status"])
             results = [{
