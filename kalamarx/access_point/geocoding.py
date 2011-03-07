@@ -62,13 +62,16 @@ class Geocoder(AccessPoint):
                 and request.property.name == "address"):
             raise NotImplementedError(
                 "Only simple search an 'address' is currently supported")
-        
-        results = self._cache.get(request.value.encode("utf-8"), None)
-        if results is None:
+        address = request.value.encode("utf-8")
+        results = self._cache.get(address, None)
+        if results is not None:
+            self.site.logger.info("Got address %s from cache", address)
+        else:
+            self.site.logger.info("Searching address %s from google geocoding API", address)
             json_results = json.loads(
                 urllib.urlopen(
                     API_URL + urllib.quote(
-                        request.value.encode("utf-8"))).read())
+                        address)).read())
             if json_results["status"] not in ("OK", "ZERO_RESULTS"):
                 raise GeocoderException(json_results["status"])
             results = [{
@@ -76,7 +79,7 @@ class Geocoder(AccessPoint):
                     "lat": json_result["geometry"]["location"]["lat"],
                     "lng": json_result["geometry"]["location"]["lng"]
                     } for json_result in json_results["results"]]
-            self._cache[request.value.encode("utf-8")] = results
+            self._cache[address] = results
             if type(self._cache) != dict:
                 self._cache.sync()
         for result in results:
