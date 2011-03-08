@@ -65,9 +65,9 @@ class Geocoder(AccessPoint):
         address = request.value.encode("utf-8")
         results = self._cache.get(address, None)
         if results is not None:
-            self.site.logger.info("Got address %s from cache", address)
+            self.site.logger.debug("Got address %s from cache", address)
         else:
-            self.site.logger.info("Searching address %s from google geocoding API", address)
+            self.site.logger.debug("Searching address %s from google geocoding API", address)
             json_results = json.loads(
                 urllib.urlopen(
                     API_URL + urllib.quote(
