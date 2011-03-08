@@ -26,7 +26,7 @@ import logging
 
 class KalamarRequestConverter(BaseConverter):
     """A werkzeug converter from JSONQuery to kalamar Query objects
-    
+
     """
     regex = '\[.*'
     def __init__(self, url_map):
@@ -38,4 +38,3 @@ class KalamarRequestConverter(BaseConverter):
             return value
         except:
             raise ValidationError
-        

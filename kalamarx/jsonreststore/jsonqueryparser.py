@@ -41,6 +41,10 @@ def p_query(p):
             '''
     p[0] = p[1]
 
+def p_STRING(p):
+    ''' STRING : STRING_SINGLE_QUOTE
+            |    STRING_DOUBLE_QUOTE'''
+    p[0] = p[1]
 
 def p_distinct(p):
     ''' distinct : query DISTINCT'''
@@ -66,8 +70,15 @@ def p_bin_expr_cond(p):
 #    p[0] = p[1]
 
 def p_expression_cond(p):
-    '''test : PROPERTY OPERATOR scalar '''
-    p[0] = Condition(property_name = p[1], operator = p[2], value = p[3])
+    '''test : PROPERTY OPERATOR scalar
+        | '(' PROPERTY OPERATOR scalar ')'
+    '''
+    operator = p[2]
+    value = p[3]
+    if operator == '~':
+        operator = 'like'
+        value = value.replace('*', '%')
+    p[0] = Condition(property_name = p[1], operator = operator, value = value)
 
 
 #Define the sort parser
@@ -96,7 +107,7 @@ def p_scalar(p):
 #Define mapping parser
 
 def p_select(p):
-    ''' select : MAPPING_START aliases SUBEXPRESSION_END 
+    ''' select : MAPPING_START aliases SUBEXPRESSION_END
     '''
     p[0] = query.QuerySelect(p[2])
 
@@ -113,9 +124,32 @@ def p_mapping_group(p):
     p[1].update(p[3])
     p[0] = p[1]
 
+def p_PROPERTY_INDEXED(p):
+    ''' PROPERTY_INDEXED : SUBEXPRESSION_START STRING SUBEXPRESSION_END'''
+    p[0] = p[2]
+
+def p_PROPERTY(p):
+    ''' PROPERTY : PROPERTY_ID
+            | PROPERTY_INDEXED
+            | CURRENT_OBJECT '''
+    p[0] = p[1]
+
+def p_current_index(p):
+    ''' PROPERTY : CURRENT_OBJECT PROPERTY_INDEXED '''
+    p[0] = p[2]
+
+def p_prop_and_index(p):
+    ''' PROPERTY : PROPERTY PROPERTY_INDEXED'''
+    p[0] = '.'.join(p[0], p[2])
+
+
 def p_mapping(p):
     ''' alias_group : PROPERTY MAPPING_DELIMITOR PROPERTY'''
     p[0] = dict([(p[1], p[3])])
+
+def p_paren_test(p):
+    ''' test : LEFT_PAREN test RIGHT_PAREN '''
+    p[0] = p[2]
 
 
 def p_range(p):
@@ -123,12 +157,23 @@ def p_range(p):
             MAPPING_DELIMITOR NUMBER SUBEXPRESSION_END '''
     p[0] = query.QueryRange(slice(p[2], p[4]))
 
+def p_range_end(p):
+    ''' range : SUBEXPRESSION_START MAPPING_DELIMITOR \
+            NUMBER SUBEXPRESSION_END'''
+    p[0] = query.QueryRange(slice(None, p[3]))
+
+def p_range_begin(p):
+    ''' range : SUBEXPRESSION_START NUMBER MAPPING_DELIMITOR \
+            SUBEXPRESSION_END'''
+    p[0] = query.QueryRange(slice(p[2], None))
+
+
 yacc.yacc(debug=True)
 
 def parse(query_string):
     """Parses a query string
     >>> import itertools
-    >>> items = itertools.cycle([{'a':1, 'b':1},{'a':2, 'b': 2}]) 
+    >>> items = itertools.cycle([{'a':1, 'b':1},{'a':2, 'b': 2}])
     >>> query = parse("[?a=2][1:3]")
     >>> list(query(items))
     [{'a': 2, 'b': 2}, {'a': 2, 'b': 2}]

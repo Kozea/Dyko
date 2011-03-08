@@ -40,7 +40,7 @@ def test_alchemy():
         "name": AlchemyProperty(unicode, column_name="name"),
         "color": AlchemyProperty(unicode, column_name="color"),
         "foreign": remote_property},
-        ["id"], True)
+        ["id"], True, engine_opts={'echo': True})
     foreign_access_point = Alchemy(url, "foreign", {
         "code": AlchemyProperty(unicode, column_name="code"),
         "name": AlchemyProperty(unicode, column_name="name")},
