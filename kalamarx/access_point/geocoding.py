@@ -40,7 +40,7 @@ class GeocoderException(Exception):
 class Geocoder(AccessPoint):
     """Access point to a Google Geocoding API.
 
-    If you want the geocode cache to be persistent, set persistent_file 
+    If you want the geocode cache to be persistent, set persistent_file
     to a file path
 """
 
@@ -58,7 +58,7 @@ class Geocoder(AccessPoint):
             self._cache = shelve.open(persistent_file)
 
     def search(self, request):
-        if not (isinstance(request, Condition) 
+        if not (isinstance(request, Condition)
                 and request.property.name == "address"):
             raise NotImplementedError(
                 "Only simple search an 'address' is currently supported")
@@ -67,7 +67,7 @@ class Geocoder(AccessPoint):
         if results is not None:
             self.site.logger.debug("Got address %s from cache", address)
         else:
-            self.site.logger.debug("Searching address %s from google geocoding API", address)
+            self.site.logger.info("Searching address %s from google geocoding API", address)
             json_results = json.loads(
                 urllib.urlopen(
                     API_URL + urllib.quote(
@@ -84,10 +84,9 @@ class Geocoder(AccessPoint):
                 self._cache.sync()
         for result in results:
             yield self.create(result)
-                    
+
     def delete(self, item):
         raise NotImplementedError("Read only access point")
 
     def save(self, item):
         raise NotImplementedError("Read only access point")
-        
