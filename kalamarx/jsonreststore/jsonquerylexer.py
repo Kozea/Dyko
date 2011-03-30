@@ -21,6 +21,7 @@
 """
 # pylint: disable=C0103
 import ply.lex as lex
+import sys
 
 from kalamar.request import And, Or
 
@@ -29,8 +30,9 @@ tokens = (
     'SUBEXPRESSION_END',
     'NUMBER',
     'OPERATOR',
-    'PROPERTY',
-    'STRING',
+    'PROPERTY_ID',
+    'STRING_DOUBLE_QUOTE',
+    'STRING_SINGLE_QUOTE',
     'BIN_OPERATOR',
     'SORT',
     'LIST_SEPARATOR',
@@ -40,12 +42,19 @@ tokens = (
     'DISTINCT',
     'PROPERTY_SEPARATOR',
     'DICT_START',
-    'DICT_END'
+    'DICT_END',
+    'CURRENT_OBJECT',
+    'LEFT_PAREN',
+    'RIGHT_PAREN'
 )
 
 t_DISTINCT = r'\.distinct\(\)'
 
+t_LEFT_PAREN = '\('
+t_RIGHT_PAREN = '\)'
+
 t_SUBEXPRESSION_START = r'\['
+
 t_SUBEXPRESSION_END = r'\]'
 
 t_MAPPING_START = r'\[='
@@ -62,8 +71,9 @@ t_ignore = '\t\n '
 
 t_CONDITION_SYMBOL = '\?'
 
+t_CURRENT_OBJECT = '@'
 
-BIN_OPS = {'&': And, '|': Or} 
+BIN_OPS = {'&': And, '|': Or}
 SORT = { '\\' : False, '/': True}
 
 def t_SORT(t):
@@ -71,25 +81,36 @@ def t_SORT(t):
     t.value = SORT[t.value]
     return t
 
-def t_STRING(t):
+def t_STRING_DOUBLE_QUOTE(t):
     r'"[^"]+"'
     t.value = t.value[1:-1]
     return t
 
+def t_STRING_SINGLE_QUOTE(t):
+    r"'[^']+'"
+    t.value = t.value[1:-1]
+    return t
+
+
 def t_OPERATOR(t):
-    r'[=><]|<=|>=|!='
+    r'[=><]|<=|>=|!=|~'
     t.value = t.value
     return t
 
-def t_PROPERTY(t):
-    r'([a-zA-Z_]+[a-zA-Z\d_]*)+(\.([a-zA-Z_]+[a-zA-Z\d_]*))*'
-    t.value = str(t.value)
+def t_NUMBER(t):
+    r'\d+|([Ii]nfinity)'
+    if str(t.value).lower() == 'infinity':
+        t.value = None
+    else:
+        t.value = int(t.value)
     return t
 
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
+
+def t_PROPERTY_ID(t):
+    r'(@\.)?([a-zA-Z_]+[a-zA-Z\d_]*)+(\.([a-zA-Z_]+[a-zA-Z\d_]*))*'
+    t.value = str(t.value).strip('@.')
     return t
+
 
 def t_BIN_OPERATOR(t):
     r'[&|]'
@@ -97,4 +118,3 @@ def t_BIN_OPERATOR(t):
     return t
 
 lex.lex()
-

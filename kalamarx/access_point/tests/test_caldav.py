@@ -18,7 +18,7 @@
 from nose.tools import eq_, nottest
 
 from kalamarx.access_point.radicale import CalDav
-from kalamar.site import Site
+from kalamar.site import Site 
 from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -116,7 +116,6 @@ class TestRadicale(object):
 
     def test_remove_event(self):
         """Simple test asserting that an item can be properly deleted."""
-        return
         self.create_simple_item()
         item = self.assert_simple_item()
         item.delete()
@@ -124,7 +123,6 @@ class TestRadicale(object):
         eq_(len(items), 0)
 
     def test_update_event(self):
-        return
         """Simple test asserting that an item can be properly updated."""
         self.create_simple_item()
         item = self.assert_simple_item()

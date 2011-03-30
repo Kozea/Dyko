@@ -33,8 +33,10 @@ except ImportError:
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import NotFound
-from kalamar.item import AbstractItem 
+from werkzeug.urls import url_unquote
+from kalamar.item import AbstractItem
 from kalamar.query import QueryChain
+from kalamar.value import Iter
 from decimal import Decimal
 from datetime import date
 from kalamarx.jsonreststore.requestconverter import KalamarRequestConverter
@@ -77,12 +79,12 @@ class KalamarJSONEncoder(json.JSONEncoder):
 
         """
         jsonvalue = "null"
-        if isinstance(obj, set) or isinstance(obj, tuple):
+        if isinstance(obj, (set, tuple, Iter)):
             jsonvalue = list([self.default(value) for value in obj])
         elif isinstance(obj, Decimal):
             jsonvalue = str(obj)
         elif isinstance(obj, date):
-            jsonvalue = {"_type":"Date", "_value":obj.isoformat()} 
+            jsonvalue = {"_type":"Date", "_value":obj.isoformat()}
         elif isinstance(obj, AbstractItem):
             ap_name = obj.access_point.name
             ap_properties = obj.access_point.identity_properties
@@ -104,8 +106,6 @@ class JSONRest:
 
     """
 
-
-
     def __init__(self, kalamar_site, base_url="", wrapped_app = None):
         self.kalamar = kalamar_site
         self.wrapped_app = wrapped_app
@@ -124,13 +124,16 @@ class JSONRest:
                     Rule('%s/<string:access_point>/' % base_url,
                         methods=("POST",), endpoint = "create_item")
             ], converters={"request" : KalamarRequestConverter})
-         
+
     def __call__(self, environ, start_response):
+        if environ['QUERY_STRING']:
+            environ['PATH_INFO'] = '%s?%s' % (environ['PATH_INFO'],
+                    url_unquote(environ['QUERY_STRING']))
         request = Request(environ)
         url_map = self.url_map.bind_to_environ(request.environ)
         try :
             endpoint, kwargs = url_map.match()
-            if request.data: 
+            if request.data:
                 kwargs['data'] = self.fromjson(request.data)
             if 'ref' in kwargs:
                 kwargs['item'] = self.ref_to_item(kwargs.pop('ref'))
@@ -147,7 +150,6 @@ class JSONRest:
 
     def __get_access_point(self, access_point):
         """Returns an access point from its name
-        
         """
         return self.kalamar.access_points[access_point]
 
@@ -215,5 +217,5 @@ class JSONResponse(Response):
                        ('Content-Length', str(len(self.content)))))
 
     def __call__(self, environ, start_response):
-        start_response('200 OK', self.headers) 
+        start_response('200 OK', self.headers)
         return self.content

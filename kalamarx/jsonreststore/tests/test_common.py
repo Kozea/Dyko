@@ -63,20 +63,19 @@ class testedsite(object):
         self.teardown = nottest(teardown) if teardown is not None else None
 
     def __call__(self, make_site):
-    
+
         def _run_test(site):
             """Returns a function executing the test given as argument
             against the site"""
             return lambda test : test(make_client(site))
 
-            
         def test_run():
             """Run all tests"""
             for test in commontest.tests:
                 site = make_site()
                 runtest = _run_test(site)
                 if self.teardown :
-                    runtest.tearDown = lambda  : self.teardown(site) 
+                    runtest.tearDown = lambda  : self.teardown(site)
                 yield runtest, test
 
         update_wrapper(test_run, make_site)
