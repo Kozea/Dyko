@@ -1,6 +1,6 @@
 from kalamar.request import Condition, And, Or
 
-from kalamar.site import site
+from kalamar.site import Site
 
 
 def print_results(condition):
