@@ -61,7 +61,7 @@ class Geocoder(AccessPoint):
         if not (isinstance(request, Condition)
                 and request.property.name == "address"):
             raise NotImplementedError(
-                "Only simple search an 'address' is currently supported")
+                "Only simple search on 'address' is currently supported")
         address = request.value.encode("utf-8")
         results = self._cache.get(address, None)
         if results is not None:
