@@ -1,4 +1,5 @@
 {
+  "name": "Dyko",
   "title": "Dyko",
   "menu": [
     {"name": "News", "link": "/news"},
