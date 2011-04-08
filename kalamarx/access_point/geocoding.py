@@ -29,7 +29,7 @@ Please read and respect `the terms of services<http://code.google.com/apis/maps/
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
 from kalamar.request import Condition
-import urllib, json, shelve
+import urllib, json, pickle
 
 API_URL="http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address="
 
@@ -55,15 +55,10 @@ class Geocoder(AccessPoint):
         if persistent_file is None:
             self._cache = {}
         else:
-            # Force gdbm module usage
-            import gdbm
-            gdbm.open(persistent_file, 'c').close()
+            fd = open(persistent_file)
+            self._cache = pickle.load(fd)
 
     def search(self, request):
-        from datetime import datetime
-        begin = datetime.now()
-        if self.persistent_file:
-            self._cache = shelve.open(self.persistent_file)
         if not (isinstance(request, Condition)
                 and request.property.name == "address"):
             raise NotImplementedError(
@@ -86,9 +81,10 @@ class Geocoder(AccessPoint):
                     "lng": json_result["geometry"]["location"]["lng"]
                     } for json_result in json_results["results"]]
             self._cache[address] = results
-        if self.persistent_file:
-            self._cache.close()
-        self.site.logger.debug("Search took %s " % (datetime.now() - begin))
+            if self.persistent_file:
+                fd = open(self.persistent_file, 'w')
+                pickle.dump(self._cache, fd)
+                fd.close()
         for result in results:
             yield self.create(result)
 
