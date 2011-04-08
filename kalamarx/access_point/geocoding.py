@@ -19,14 +19,13 @@
 Geocoding
 ====
 
-Read only access point to get longitude and latitude 
+Read only access point to get longitude and latitude
 from the `Google geocoding API<http://code.google.com/apis/maps/documentation/geocoding/>`_
 
 Please read and respect `the terms of services<http://code.google.com/apis/maps/terms.html#section_10_12>`_
 
 """
 
-from __future__ import print_function
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
 from kalamar.request import Condition
@@ -40,9 +39,9 @@ class GeocoderException(Exception):
 class Geocoder(AccessPoint):
     """Access point to a Google Geocoding API.
 
-    If you want the geocode cache to be persistent, set persistent_file 
+    If you want the geocode cache to be persistent, set persistent_file
     to a file path
-"""
+    """
 
     def __init__(self, persistent_file=None):
         properties = {
@@ -52,13 +51,20 @@ class Geocoder(AccessPoint):
             }
         identity_properties = ("address",)
         super(Geocoder, self).__init__(properties, identity_properties)
+        self.persistent_file = persistent_file
         if persistent_file is None:
             self._cache = {}
         else:
-            self._cache = shelve.open(persistent_file)
+            # Force gdbm module usage
+            import gdbm
+            gdbm.open(persistent_file, 'c').close()
 
     def search(self, request):
-        if not (isinstance(request, Condition) 
+        from datetime import datetime
+        begin = datetime.now()
+        if self.persistent_file:
+            self._cache = shelve.open(self.persistent_file)
+        if not (isinstance(request, Condition)
                 and request.property.name == "address"):
             raise NotImplementedError(
                 "Only simple search an 'address' is currently supported")
@@ -80,14 +86,14 @@ class Geocoder(AccessPoint):
                     "lng": json_result["geometry"]["location"]["lng"]
                     } for json_result in json_results["results"]]
             self._cache[address] = results
-            if type(self._cache) != dict:
-                self._cache.sync()
+        if self.persistent_file:
+            self._cache.close()
+        self.site.logger.debug("Search took %s " % (datetime.now() - begin))
         for result in results:
             yield self.create(result)
-                    
+
     def delete(self, item):
         raise NotImplementedError("Read only access point")
 
     def save(self, item):
         raise NotImplementedError("Read only access point")
-        
