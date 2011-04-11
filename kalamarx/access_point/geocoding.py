@@ -29,6 +29,7 @@ Please read and respect `the terms of services<http://code.google.com/apis/maps/
 from kalamar.access_point import AccessPoint
 from kalamar.property import Property
 from kalamar.request import Condition
+from collections import OrderedDict
 import urllib, json, pickle
 
 API_URL="http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address="
@@ -56,7 +57,7 @@ class Geocoder(AccessPoint):
             self._cache = {}
         else:
             fd = open(persistent_file)
-            self._cache = pickle.load(fd)
+            self._cache = OrderedDict(pickle.load(fd))
 
     def search(self, request):
         if not (isinstance(request, Condition)
