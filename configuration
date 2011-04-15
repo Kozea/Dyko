@@ -1,6 +1,6 @@
 {
   "name": "Dyko",
-  "title": "Dyko",
+  "description": "Lightweight Web Framework",
   "menu": [
     {"name": "News", "link": "/news"},
     {"name": "Doc", "link": "/doc"},
