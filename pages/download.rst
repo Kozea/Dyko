@@ -9,7 +9,7 @@ PyPI
 Dyko is `available on PyPI <http://pypi.python.org/pypi/Dyko/>`_. To install,
 just type as superuser::
 
-  easy_install dyko
+  pip install dyko
 
 
 Git Repository

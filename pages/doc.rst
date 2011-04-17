@@ -14,7 +14,7 @@ Using PyPI
 Dyko is `available on PyPI <http://pypi.python.org/pypi/Dyko/>`_. To install,
 just type as superuser::
 
-  easy_install dyko
+  pip install dyko
 
 Using sources
 -------------
@@ -57,7 +57,7 @@ Create a simple website
 
 Quick and dirty website in 1 minute::
 
-  $ easy_install Dyko, Werkzeug, Jinja2
+  $ pip install Dyko Werkzeug Jinja2
   $ mkdir website
   $ cd website
   $ mkdir views
