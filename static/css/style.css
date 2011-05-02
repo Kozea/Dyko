@@ -309,6 +309,7 @@ section article > section:after {
 footer {
   background: black;
   border-radius: 0 0 15px 15px;
+  clear: none;
   font-size: 0.8em;
   display: block;
   line-height: 3.5em;
