@@ -45,8 +45,8 @@ API
 
 You can read the API documentation for:
 
-- `Kalamar </static/api/kalamar.html>`_, the content management library;
-- `Kraken </static/api/kraken.html>`_, the HTTP request and template manager.
+- `Kalamar </api/kalamar.html>`_, the content management library;
+- `Kraken </api/kraken.html>`_, the HTTP request and template manager.
 
 
 Howto
@@ -79,7 +79,7 @@ called ``hello.html.jinja2`` will be (by default) available at the ``/hello``
 URL, with a ``text/html`` mimetype, parsed by the Jinja2 template engine.
 
 You can learn `more about template engines
-</static/api/kraken.html#template-engine>`_ in our API documentation.
+</api/kraken.html#template-engine>`_ in our API documentation.
 
 Create a WSGI-based website
 ---------------------------

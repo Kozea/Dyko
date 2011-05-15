@@ -96,7 +96,7 @@ Let's assume we have a music collection on our hard-drive, located at
 
 We want to be able to search those items by artist, album or title.
 
-You can freely download the `sample music collection </static/music.tar.gz>`_.
+You can freely download the `sample music collection </data/music.tar.gz>`_.
 
 The sample music collection only contains CC-licensed titles, downloaded from
 Jamendo.
