@@ -114,7 +114,7 @@ which it must be registered.
 
 Let's put the final code in a ``kalamar_site.py`` module:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part1/kalamar_site.py
+.. pycode:: tutorials/tutorial2/part1/kalamar_site.py
 
 
 Filling and querying the database
@@ -175,7 +175,7 @@ every single entry from the database, and dump it to the console:
        print "Post ID #%s: %s" % (item["id"], item["title"])
        print item["content"]
 
-.. pyexec:: projects/dyko/tutorials/tutorial2/part2/search_simple.py
+.. pyexec:: tutorials/tutorial2/part2/search_simple.py
 
 Another example, this time using a simple query:
 
@@ -185,15 +185,15 @@ Another example, this time using a simple query:
        print "Post ID #%s: %s" % (item["id"], item["title"])
        print item["content"]
 
-.. pyexec:: projects/dyko/tutorials/tutorial2/part2/search_query2.py
+.. pyexec:: tutorials/tutorial2/part2/search_query2.py
 
 The dictionary notation for a request is just a shortcut for its object
 counterpart: the ``kalamar.request`` module offers what you need to perform
 more advanced queries. Here are some examples:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part2/search_query3.py
+.. pycode:: tutorials/tutorial2/part2/search_query3.py
 
-.. pyexec:: projects/dyko/tutorials/tutorial2/part2/search_query3.py
+.. pyexec:: tutorials/tutorial2/part2/search_query3.py
 
 
 And now for something completely different… Kraken!
@@ -243,7 +243,7 @@ Now, you just have to fill it with some content. Add a file named
 ``hello_world.html.jinja2`` in the views directory, containing a basic Jinja2
 hello world.
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part3/views/hello_world.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part3/views/hello_world.html.jinja2 jinja
 
 .. note::
 
@@ -253,17 +253,17 @@ hello world.
 Now, open your browser to `<http://localhost:5000/hello_world/>`_, you should
 see the following result:
 
-.. werkzeugurl:: projects/dyko/tutorials/tutorial2/part3/test_url.py /hello_world/
+.. werkzeugurl:: tutorials/tutorial2/part3/test_url.py /hello_world/
 
 Because Kraken is designed to be used with Kalamar, you can initiate the Kraken
 site with a Kalamar site. Copy your former Kalamar site to a ``blog_kalamar``
 module.
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part3/blog_kalamar.py
+.. pycode:: tutorials/tutorial2/part3/blog_kalamar.py
 
 And update ``kraken_site.py`` with the following:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part3/kraken_site.py
+.. pycode:: tutorials/tutorial2/part3/kraken_site.py
 
 You should now have the following directory structure::
 
@@ -276,9 +276,9 @@ You should now have the following directory structure::
 You can now use your Kalamar site from within your application.
 Open a new ``views/index.html.jinja2`` file, and create a simple template:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part3/views/index.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part3/views/index.html.jinja2 jinja
 
-.. werkzeugurl:: projects/dyko/tutorials/tutorial2/part3/test_url.py /
+.. werkzeugurl:: tutorials/tutorial2/part3/test_url.py /
 
 Those hard-coded blog-posts look kinda ugly. Maybe we should add a form to add
 posts?
@@ -316,7 +316,7 @@ Create a new module, ``controllers.py``, containing the following code:
 The ``controllers`` module be registered in the site, with the
 ``register_controllers`` method:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part4/kraken_site.py
+.. pycode:: tutorials/tutorial2/part4/kraken_site.py
 
 The ``@expose_template`` decorator makes this URL available from
 ``/post/<any_post_id>``. With the default configuration, the values it returns
@@ -325,27 +325,27 @@ extension) is ``post``.
 
 So, let's create the post/index.html.jinja2 template!
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part4/views/post/index.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part4/views/post/index.html.jinja2 jinja
 
 Now, let's tweak the index page to include permalinks to the individual posts:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part4/views/index.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part4/views/index.html.jinja2 jinja
 
 Following one of those links should yield the following results:
 
-.. werkzeugurl:: projects/dyko/tutorials/tutorial2/part4/test_url.py /post/3240
+.. werkzeugurl:: tutorials/tutorial2/part4/test_url.py /post/3240
 
 Armed with this new knowledge, we can procede on adding more controllers to add
 a blog post!
 
 First, we can create the page containing the form used for adding a post:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part4/views/post/add.html.jinja2 html
+.. pycode:: tutorials/tutorial2/part4/views/post/add.html.jinja2 html
 
 Now, we will need a to process the form submission. For this, we will register
 a controller for the same /post/add url, but specialized for the POST method:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part4/controllers.py
+.. pycode:: tutorials/tutorial2/part4/controllers.py
 
 We use the ``expose`` decorator instead of ``expose_template``, because we want
 to redirect the user in order to avoid resubmission (using the `"303" HTTP
@@ -398,13 +398,13 @@ Similarly, this is how we define the comments access point:
 
 So the whole source code for the Kalamar site reads like this:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part5/blog_kalamar.py
+.. pycode:: tutorials/tutorial2/part5/blog_kalamar.py
 
 This relationship exists, but it's not used yet. We should create a
 ``/post/comments/add`` URL for posting a new comment, and a list of all
 comments below each post:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part5/views/post/index.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part5/views/post/index.html.jinja2 jinja
 
 And the associated controller:
 
@@ -440,7 +440,7 @@ Using the ``view`` queries, you can:
 
 We'll use the view method to display only the 10 latest post on the index page:
 
-.. pycode:: projects/dyko/tutorials/tutorial2/part5/views/index.html.jinja2 jinja
+.. pycode:: tutorials/tutorial2/part5/views/index.html.jinja2 jinja
 
 The ``order_by`` argument must be a list of tuples.
 

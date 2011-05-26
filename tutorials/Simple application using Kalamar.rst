@@ -103,7 +103,7 @@ Jamendo.
 
 In a file named ``kalamar_site.py``, copy the following code:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/kalamar_site.py
+.. pycode:: tutorials/tutorial1/part1/kalamar_site.py
 
 We can then perform some simple search on it, using the following code.
 
@@ -112,36 +112,36 @@ case) and an (optional) query.
 
 Let's define a small ``utils`` module, containing basic display code:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/utils.py
+.. pycode:: tutorials/tutorial1/part1/utils.py
 
 Now, we can dump the whole database by performing a search on the ``'music'``
 access point, without any query. Here is the code:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/search_example.py
+.. pycode:: tutorials/tutorial1/part1/search_example.py
 
 Which, once executed, gives the following output:
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part1/search_example.py
+.. pyexec:: tutorials/tutorial1/part1/search_example.py
 
 You can pass a query to the search method. The query must be either a
 ``Request`` instance, or a dictionary for syntactic sugar.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/search_query_example.py
+.. pycode:: tutorials/tutorial1/part1/search_query_example.py
 
 Yields the following results:
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part1/search_query_example.py
+.. pyexec:: tutorials/tutorial1/part1/search_query_example.py
 
 Now, let's say we want to add a music file to our collection:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/save_example.py
+.. pycode:: tutorials/tutorial1/part1/save_example.py
 
 If you visit the ``/opt/Music`` directory, you will notice that the directory
 structure corresponding to the artist, album, etc. has been created for you.
 
 Similarly, you can now delete the same file from your collection:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part1/delete_example.py
+.. pycode:: tutorials/tutorial1/part1/delete_example.py
 
 Once executed, this code deletes your item and the empty directories left
 behind it.
@@ -180,30 +180,30 @@ through the whole process.
    has been done only to avoid reparsing the whole file each time a property
    from the tags is accessed
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part2/mutagen_ap.py
+.. pycode:: tutorials/tutorial1/part2/mutagen_ap.py
 
 We can now use this access point instead of the previous one.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part2/kalamar_site.py
+.. pycode:: tutorials/tutorial1/part2/kalamar_site.py
 
 In order to show our changes, we just have to change the dump_item method we
 used to display items:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part2/utils.py
+.. pycode:: tutorials/tutorial1/part2/utils.py
 
 And the exact same code can be run again on the access point, now displaying the
 added properties:
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part2/search_query_example.py
+.. pyexec:: tutorials/tutorial1/part2/search_query_example.py
 
 The update example shows how to set tags on the defined tags on the file.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part2/update_example.py
+.. pycode:: tutorials/tutorial1/part2/update_example.py
 
 And when running the search example again, you can confirm the tag has actually
 been update:
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part2/search_example.py
+.. pyexec:: tutorials/tutorial1/part2/search_example.py
 
 Moving to a database
 ********************
@@ -219,22 +219,22 @@ Let's begin with the database part.
 
 The alchemy access point allows us to use SQLAlchemy to access any RDBMS.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part3/kalamar_site.py
+.. pycode:: tutorials/tutorial1/part3/kalamar_site.py
 
 Then, populating and querying the database is as easy as previously (after some
 tweaking to our dump_item method, removing the 'ext' property):
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part3/save_example.py
+.. pycode:: tutorials/tutorial1/part3/save_example.py
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part3/save_example.py
+.. pyexec:: tutorials/tutorial1/part3/save_example.py
 
 So we can preserve the same API, while changing the concrete storage
 implementation. Let's fill our SQLite database with the access point created
 previously!
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part3/data_migration.py
+.. pycode:: tutorials/tutorial1/part3/data_migration.py
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part3/data_migration.py
+.. pyexec:: tutorials/tutorial1/part3/data_migration.py
 
 Obviously, we should store these data elsewhere than in an in-memory database.
 But for the sake of this tutorial, let's keep it like this.
@@ -255,19 +255,19 @@ Our data model will consist of:
 For this implementation, we will slightly change our model to take this
 relationship into account:
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part4/kalamar_site.py
+.. pycode:: tutorials/tutorial1/part4/kalamar_site.py
 
 Migrating our data is as easy as before, we just have to add the old item as a
 property.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part4/data_migration.py
+.. pycode:: tutorials/tutorial1/part4/data_migration.py
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part4/data_migration.py
+.. pyexec:: tutorials/tutorial1/part4/data_migration.py
 
 And using our good old search code, modified for the occasion, we can access the
 file on the file system directly from the item returned from the database.
 
-.. pycode:: projects/dyko/tutorials/tutorial1/part4/search_example.py
+.. pycode:: tutorials/tutorial1/part4/search_example.py
 
-.. pyexec:: projects/dyko/tutorials/tutorial1/part4/search_example.py
+.. pyexec:: tutorials/tutorial1/part4/search_example.py
 
