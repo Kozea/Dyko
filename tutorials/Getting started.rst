@@ -11,7 +11,7 @@ Getting Started
 Installing Dyko
 ---------------
 
-See `the documentation page </doc#installation>`_ to install Dyko, with the
+See `the documentation page </doc/#installation>`_ to install Dyko, with the
 SQLAlchemy backend.
 
 

@@ -13,7 +13,7 @@ layer.
 
 The only prerequisites for the first part are:
 
-- having `Dyko installed </doc#installation>`_;
+- having `Dyko installed </doc/#installation>`_;
 - knowing a little bit of Python.
 
 In following parts, additional dependencies will be required (like `SQLAlchemy
