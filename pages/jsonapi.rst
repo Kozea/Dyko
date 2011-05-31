@@ -12,7 +12,7 @@ JSONApi Tutorial
 Installing DykoX
 ----------------
 
-See the `dykoX documentation page </dykox#how-do-i-get-it>`_.
+See the `dykoX documentation page </dykox/#how-do-i-get-it>`_.
 
 Using the API Server-side
 -------------------------

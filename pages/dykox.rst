@@ -33,6 +33,6 @@ Clone the repository, and run the setup script (as root):
 What is the JSON Rest API you mentioned earlier?
 ================================================
 
-There is a simple documentation `there </jsonapi>`_.
+There is a simple documentation `there </jsonapi/>`_.
 
 

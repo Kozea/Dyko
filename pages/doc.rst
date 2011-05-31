@@ -19,7 +19,7 @@ just type as superuser::
 Using sources
 -------------
 
-Download the `git master or the sources tarball </download>`_, and install Dyko
+Download the `git master or the sources tarball </download/>`_, and install Dyko
 by typing in a terminal, as superuser::
 
   python setup.py install
@@ -68,7 +68,7 @@ Quick and dirty website in 1 minute::
 
 Then open http://localhost:5000/hello in a browser.
 
-If you want to go further, just `get started </tutorials/Getting%20started>`_.
+If you want to go further, just `get started </tutorials/Getting%20started/>`_.
 
 Use multiple template engines
 -----------------------------
