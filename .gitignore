@@ -2,3 +2,4 @@ static/api
 tutorials/*.html
 *.pyc
 static/music.tar.gz
+/frozen
