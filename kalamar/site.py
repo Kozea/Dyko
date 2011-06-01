@@ -149,13 +149,8 @@ class Site(object):
         Return an item of ``access_point_name`` from the ``repr`` string.
         ``repr`` should have been generated with item.__repr__()
         """
-        identity = repr.split("/")
         access_point = self.access_points[access_point_name]
-        id_properties = [
-            prop.name
-            for prop in access_point.identity_properties]
-        request = dict(zip(id_properties, identity))
-        return self.open(access_point_name, request, default)
+        return access_point.loader_from_reference_repr(repr)(None)[0]
 
     create = _delegate_to_acces_point("create")
     delete = _delegate_to_acces_point("delete")

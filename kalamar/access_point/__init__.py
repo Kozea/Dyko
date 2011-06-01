@@ -200,19 +200,24 @@ class AccessPoint(object):
         heterogeneous linked access points.
 
         """
+
         if not representation:
             return lambda item: (None,)
-        props = self.identity_properties
-        values = representation.split("/")
-        if len(props) != len(values):
-            raise ValueError(
-                "The representation doesn't match the identity properties:"
-                "%s expected, got %s values" % (
-                    [prop.name for prop in props], values))
-        properties = dict(
-            (prop.name, prop.cast((value,))[0])
-            for prop, value in zip(props, values))
-        return lambda item: (ItemStub(self, properties),)
+        def walk(representation, properties):
+            if not properties:
+                return {}
+            prop = properties[0]
+            if prop.relation == 'many-to-one':
+                idx = len(prop.remote_ap.identity_properties)
+            else:
+                idx = 1
+            value = '/'.join(representation[:idx])
+            remainder = representation[idx:]
+            request = walk(remainder, properties[1:])
+            request.update({prop.name: prop.cast((value,))[0]})
+            return request
+        request = walk(representation.split('/'), self.identity_properties)
+        return lambda item: (ItemStub(self, request),)
 
     @abc.abstractmethod
     def delete(self, item):
