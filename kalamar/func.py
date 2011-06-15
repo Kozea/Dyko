@@ -139,6 +139,22 @@ class constant(transform_func):
     @property
     def child_property(self):
        return None
+       
+class split(transform_func):
+
+    def __init__(self, property_name, separator):
+        super(split, self).__init__(property_name)
+        self.separator = separator
+        
+    def _copy(self):
+        return self.__class__(self.property, self.separator)
+
+    def __call__(self, value):
+        return value.split(self.separator)
+        
+    def return_property(self, value):
+        return Property(list)
+
 
 
 class upper(transform_func):

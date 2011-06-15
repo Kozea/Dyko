@@ -412,6 +412,7 @@ def test_transform_fun(site):
         'name': 'name',
         'UPPER': func.upper('name'),
         'lower': func.lower('name'),
+        'split': func.split('name', 'a'),
         'id': 'id'
     }))
     eq_(len(results), 3)
@@ -424,6 +425,7 @@ def test_transform_fun(site):
     assert all([x['lower'] == x['name'].lower() for x in results])
     assert all([x['test'] == 'test' for x in results])
     assert all([x['id_plus_one'] == x['id'] + 1 for x in results])
+    assert all([x['split'] == x['name'].split('a') for x in results])
 
 
 @common
