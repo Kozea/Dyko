@@ -41,7 +41,7 @@ except ImportError:
     print("WARNING: The SQLAlchemy AP is not available.", file=sys.stderr)
 else:
     from sqlalchemy import create_engine, Table, Column, MetaData, ForeignKey, \
-        Integer, Date, Numeric, DateTime, Boolean, Unicode
+        Integer, Date, Numeric, DateTime, Boolean, Unicode, Float
     from sqlalchemy.sql import expression, and_, or_, not_
     import sqlalchemy.exc
 
@@ -53,6 +53,7 @@ else:
         unicode: Unicode,
         bytes: Unicode,
         int: Integer,
+        float: Float,
         datetime: DateTime,
         date: Date,
         bool: Boolean,
