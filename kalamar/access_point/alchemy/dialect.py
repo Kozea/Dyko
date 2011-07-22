@@ -75,7 +75,7 @@ class AlchemyDialect(object):
 
     def func_extract(self, property, tree):
         return expression.extract(property.field, self.get_selectable(property.property, tree))
-        
+
     def get_selectable(self, property, tree):
         return self._find_fun(property)(property, tree)
 
@@ -104,7 +104,7 @@ class PostGresDialect(AlchemyDialect):
                 sqlfunctions.substr(col, slicefun.range.start, slicefun.range.stop - slicefun.range.start + 1)})
 
     def func_slice(self, slicefun, tree):
-        if slicefun.property.return_property({name: node.property for name, node in tree.children.items()}).type == list:
+        if slicefun.property.return_property(dict((name, node.property) for name, node in tree.children.items())).type == list:
             # TODO: manage real slices
             return expression.literal_column('(%s)[%s]' % (self.get_selectable(slicefun.property, tree), slicefun.range.stop + 1))
         return sqlfunctions.substr(self.get_selectable(slicefun.property, tree),
@@ -117,7 +117,7 @@ class PostGresDialect(AlchemyDialect):
 
     def func_lower(self, property, tree):
         return sqlfunctions.lower(self.get_selectable(property.property, tree))
-        
+
     def func_split(self, property, tree):
         return expression.literal_column("string_to_array(%s, E'%s')" % (self.get_selectable(property.property, tree), property.separator))
 
@@ -130,6 +130,3 @@ class SQLite3Dialect(AlchemyDialect):
 
     def func_lower(self, property, tree):
         return sqlfunctions.lower(self.get_selectable(property.property, tree))
-
-
-
