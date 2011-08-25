@@ -7,15 +7,15 @@ url: http://www.dyko.org/
 menu:
   - News:
       link: /news/
-  - Doc
+  - Doc:
       link: /doc/
-  - Tutorials
+  - Tutorials:
       link: /tutorials/
-  - Contribute
+  - Contribute:
       link: /contribute/
-  - DykoX
+  - DykoX:
       link: /dykox/
-  - Download
+  - Download:
       link: /download/
 
 vcs (git):
