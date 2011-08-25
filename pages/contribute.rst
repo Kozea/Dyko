@@ -24,10 +24,9 @@ Found a bug? Want a new feature? Report a new issue on the `Dyko bug-tracker
 As a Hacker
 ===========
 
-Interested in hacking? Feel free to clone the `git repository on Gitorious
-<http://www.gitorious.org/dyko/dyko>`_ if you want to fix bugs or update
-documentation.
+Interested in hacking? Feel free to clone the :codelink:`git repository on
+Github` if you want to add features, fix bugs or update documentation.
 
 If you want to add new access points or new template managers, take a look at
-`DykoX <http://www.gitorious.org/dyko/dykox>`_ where you may find good
-examples, exotic access points and some place to get feedback on your work!
+the DykoX branch where you may find good examples, exotic access points and
+some place to get feedback on your work!

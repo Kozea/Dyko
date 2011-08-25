@@ -15,21 +15,20 @@ just type as superuser::
 Git Repository
 ==============
 
-If you want the development version of Dyko, take a look at the `git repository
-on Gitorious <http://www.gitorious.org/dyko/dyko>`_, or clone it thanks
-to::
+If you want the development version of Dyko, take a look at the
+:codelink:`git repository on GitHub`, or clone it thanks to::
 
-  git clone git://gitorious.org/dyko/dyko.git
+  git clone git://github.com/Kozea/Dyko.git
 
-You can also download the Dyko package of the git repository:
-
-- `Dyko-git.tar.gz <http://gitorious.org/dyko/dyko/archive-tarball/master>`_
+You can also download `the Dyko package of the git repository
+<https://github.com/Kozea/Dyko/tarball/master>`_.
 
 
 Source Packages
 ===============
 
-- `Dyko-0.2 </src/dyko/Dyko-0.2.tar.gz>`_ (69 KiB)
+- `Dyko-0.2 <http://pypi.python.org/packages/source/D/Dyko/Dyko-0.2.tar.gz>`_
+  (69 KiB)
 
 
 Linux Distribution Packages

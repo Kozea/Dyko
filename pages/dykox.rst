@@ -21,12 +21,13 @@ How do I get it ?
 =================
 
 
-DykoX is hosted on `Gitorious <http://gitorious.org/+kozea/dyko/dykox>`_.
+DykoX is hosted on :codelink:`GitHub`, on the DykoX branch.
 Clone the repository, and run the setup script (as root): 
 
 .. code-block:: bash
 
-    git clone git://gitorious.org/dyko/dykox.git
+    git clone git://github.com/Kozea/Dyko.git
+    git checkout dykox
     sudo setup.py install
 
 
@@ -34,5 +35,3 @@ What is the JSON Rest API you mentioned earlier?
 ================================================
 
 There is a simple documentation `there </jsonapi/>`_.
-
-

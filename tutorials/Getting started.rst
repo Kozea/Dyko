@@ -26,9 +26,8 @@ The Dyko module responsible for this is the ``kalamar.access_point.alchemy``.
 .. note::
 
    All Kalamar access points are defined in their own submodules within the
-   ``kalamar.access_point`` module. The `DykoX project
-   <http://gitorious.org/dyko/dykox>`_ provides less stable access points and
-   various utilities around Dyko.
+   ``kalamar.access_point`` module. The `DykoX project </dykox>`_ provides less
+   stable access points and various utilities around Dyko.
 
 To do this, we will need to import the following classes:
 
