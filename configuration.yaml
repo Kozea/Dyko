@@ -1,0 +1,26 @@
+name: Dyko
+description: Lightweight Web Framework
+license: GPLv3
+public: true
+url: http://www.dyko.org/
+
+menu:
+  - News:
+      link: /news/
+  - Doc
+      link: /doc/
+  - Tutorials
+      link: /tutorials/
+  - Contribute
+      link: /contribute/
+  - DykoX
+      link: /dykox/
+  - Download
+      link: /download/
+
+vcs (git):
+  url: git://github.com/Kozea/Dyko.git
+  path: /var/db/git/dyko.git
+
+code browser (github):
+  project name: Kozea/Dyko
