@@ -46,11 +46,17 @@ body {
 */
 
 a {
-  text-shadow: 0 0 1px grey;
+  color: #888;
+  transition: 0.5s;
 }
 
 a:hover, a:focus {
-  background: #ddd;
+  color: #444;
+}
+
+h2, h3, h4, h5, h6,
+h2 a, h3 a, h4 a, h5 a, h6 a {
+  color: black;
   text-shadow: 0 0 0 transparent;
 }
 
@@ -64,11 +70,6 @@ h2 {
   line-height: 1em;
   font-weight: lighter;
   margin: 0 0 0.5em -0.5em;
-}
-
-h2, h3, h4, h5, h6,
-h2 a, h3 a, h4 a, h5 a, h6 a {
-  text-shadow: 0 0 0 transparent;
 }
 
 pre {
@@ -231,7 +232,6 @@ nav li a {
 
 nav li a:hover,
 nav li a:focus {
-  background: transparent;
   color: #76b4e8;
 }
 
@@ -287,16 +287,11 @@ section article > section:after {
 .contents {
   box-shadow: 0 0 5px #ddd inset,
               3px 3px 1px #eee;
+  padding: 1em;
 }
 
 .contents a {
-  text-shadow: 0 0 0 transparent;
   padding: 0.3em;
-}
-
-.contents a:hover,
-.contents a:focus {
-  background-color: #e3e3ef;
 }
 
 
@@ -325,12 +320,15 @@ footer ul {
 }
 
 footer ul li {
+  display: inline-block;
   margin: 0;
   padding: 0;
 }
 
 footer li a {
+  border-radius: 0.5em;
   color: #4788be;
+  padding: 0.5em;
   text-shadow: 0 0 0 transparent;
   text-transform: none;
 }
