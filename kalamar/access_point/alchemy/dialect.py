@@ -75,7 +75,7 @@ class AlchemyDialect(object):
 
     def func_extract(self, property, tree):
         return expression.extract(property.field, self.get_selectable(property.property, tree))
-        
+
     def get_selectable(self, property, tree):
         return self._find_fun(property)(property, tree)
 
@@ -114,7 +114,7 @@ class PostGresDialect(AlchemyDialect):
 
     def func_lower(self, property, tree):
         return sqlfunctions.lower(self.get_selectable(property.property, tree))
-        
+
     def func_split(self, property, tree):
         return expression.literal_column("string_to_array(%s, E'%s')" % (self.get_selectable(property.property, tree), property.separator))
 
@@ -127,6 +127,3 @@ class SQLite3Dialect(AlchemyDialect):
 
     def func_lower(self, property, tree):
         return sqlfunctions.lower(self.get_selectable(property.property, tree))
-
-
-
