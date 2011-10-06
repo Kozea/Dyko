@@ -104,9 +104,6 @@ class PostGresDialect(AlchemyDialect):
                 sqlfunctions.substr(col, slicefun.range.start, slicefun.range.stop - slicefun.range.start + 1)})
 
     def func_slice(self, slicefun, tree):
-        if slicefun.property.return_property({name: node.property for name, node in tree.children.items()}).type == list:
-            # TODO: manage real slices
-            return expression.literal_column('(%s)[%s]' % (self.get_selectable(slicefun.property, tree), slicefun.range.stop + 1))
         return sqlfunctions.substr(self.get_selectable(slicefun.property, tree),
                 slicefun.range.start,
                 slicefun.range.stop - slicefun.range.start + 1)
