@@ -23,6 +23,8 @@ class AlchemyDialect(object):
         RequestProperty: lambda col, fun: col,
         func.coalesce: lambda col, fun:
             sqlfunctions.coalesce(col, fun.replacement),
+        func.round: lambda col:
+            sqlfunctions.round(col),
         func.extract: lambda col, extract:
             expression.extract(extract.field, col),
     }
@@ -69,6 +71,9 @@ class AlchemyDialect(object):
     def func_coalesce(self, property, tree):
         return sqlfunctions.coalesce(self.get_selectable(property.property, tree),
                 property.replacement)
+
+    def func_round(self, property, tree):
+        return sqlfunctions.round(self.get_selectable(property.property, tree))
 
     def func_constant(self, property, tree):
         return expression.literal(property.constant)
