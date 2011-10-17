@@ -9,6 +9,11 @@ try:
 except ImportError:
     import builtins
 
+try:
+    import __builtin__ as builtins
+except ImportError:
+    import builtins
+
 
 class base_func(object):
 
@@ -144,22 +149,32 @@ class constant(transform_func):
     @property
     def child_property(self):
        return None
-       
+
 class split(transform_func):
 
     def __init__(self, property_name, separator):
         super(split, self).__init__(property_name)
         self.separator = separator
-        
+
     def _copy(self):
         return self.__class__(self.property, self.separator)
 
     def __call__(self, value):
         return value.split(self.separator)
-        
+
     def return_property(self, value):
         return Property(list)
 
+class round(transform_func):
+
+    def __init__(self, property):
+        self.property = make_request_property(property)
+
+    def return_property(self, properties):
+        return Property(int)
+
+    def __call__(self, property):
+        return round(property)
 
 
 class upper(transform_func):
