@@ -174,7 +174,7 @@ class round(transform_func):
         return Property(int)
 
     def __call__(self, property):
-        return round(property)
+        return builtins.round(property)
 
 
 class upper(transform_func):

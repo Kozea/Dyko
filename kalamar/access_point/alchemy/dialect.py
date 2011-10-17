@@ -24,8 +24,6 @@ class AlchemyDialect(object):
         RequestProperty: lambda col, fun: col,
         func.coalesce: lambda col, fun:
             sqlfunctions.coalesce(col, fun.replacement),
-        func.round: lambda col:
-            sqlfunctions.round(col),
         func.extract: lambda col, extract:
             expression.extract(extract.field, col),
     }
@@ -116,7 +114,6 @@ class PostGresDialect(AlchemyDialect):
 
     def func_upper(self, property, tree):
         return sqlfunctions.upper(self.get_selectable(property.property, tree))
-
 
     def func_lower(self, property, tree):
         return sqlfunctions.lower(self.get_selectable(property.property, tree))

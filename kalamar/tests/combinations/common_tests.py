@@ -123,9 +123,11 @@ def test_transform(site):
     assert all((len(res['fname']) == 2 for res in results))
     results = list(site.view("first_ap",
         request={"id": 4},
-        aliases={"second_ap_name": func.coalesce("second_ap.name", "(Empty)")}))
+        aliases={"second_ap_name": func.coalesce("second_ap.name", "(Empty)"),
+            'round': func.round(func.constant(0.9))}))
     eq_(len(results), 1)
     eq_(results[0]['second_ap_name'], '(Empty)')
+    eq_(results[0]['round'], 1)
 
 
 
