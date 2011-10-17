@@ -2,6 +2,12 @@ from abc import ABCMeta, abstractmethod
 from .request import RequestProperty, make_request_property
 from .property import Property
 import operator
+from functools import reduce
+
+try:
+    import __builtin__ as builtins
+except ImportError:
+    import builtins
 
 try:
     import __builtin__ as builtins
@@ -249,4 +255,4 @@ class substraction(standard_operator_func):
 
 class division(standard_operator_func):
 
-    OPERATOR = operator.__div__
+    OPERATOR = operator.__truediv__
