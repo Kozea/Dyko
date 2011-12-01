@@ -18,6 +18,10 @@ menu:
   - Download:
       link: /download/
 
+project (git):
+  url: git://github.com/Kozea/Dyko.git
+  path: dyko
+
 vcs (git):
   url: git://github.com/Kozea/Dyko.git
   path: /var/db/git/dyko.git
