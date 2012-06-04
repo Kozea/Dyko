@@ -88,11 +88,13 @@ class Site(object):
     def __init__(self):
         self.access_points = {}
         self.logger = logging.getLogger("dyko")
-        # TODO: NullHandler does not exist in python 2.6..
         try:
-            self.logger.addHandler(logging.NullHandler())
-        except:
-            pass
+            from logging import NullHandler
+        except ImportError:
+            class NullHandler(logging.Handler):
+                def emit(self, record):
+                    pass
+        self.logger.addHandler(NullHandler())
 
     def register(self, name, access_point):
         """Add an access point to this site.
